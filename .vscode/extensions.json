@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "naumovs.color-highlight",
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+    "lukas-tr.materialdesignicons-intellisense",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense",
+    "vue.volar",
+  ]
+}
