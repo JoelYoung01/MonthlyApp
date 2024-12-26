@@ -1,3 +1,7 @@
 # Don't forget to add these vars to github vars
 
+# Display Name for the app
 VITE_APP_TITLE=Template App
+
+# Api Url
+VITE_API_URL=localhost:8080
