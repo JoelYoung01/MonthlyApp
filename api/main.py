@@ -4,7 +4,7 @@ from api.routes import app_definition_routes, requirement_routes
 from api.deps import create_db_and_tables
 
 
-app = FastAPI()
+app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
 
 
 @app.on_event("startup")

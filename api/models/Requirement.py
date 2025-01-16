@@ -6,7 +6,7 @@ class Requirement(SQLModel, table=True):
     id: int | None = Field(default=None, index=True, primary_key=True)
     name: str
     description: str
-    app_definition_id: int = Field(sa_column=Column(ForeignKey("app_definition.id")))
+    app_definition_id: int = Field(sa_column=Column(ForeignKey("appdefinition.id")))
 
 
 class RequirementDetailSchema(SQLModel):
