@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from api.models.Requirement import Requirement, RequirementDetailSchema
+from api.models.requirement import Requirement, RequirementDetailSchema
 
 
 class AppDefinition(SQLModel, table=True):

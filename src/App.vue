@@ -12,7 +12,6 @@ const title = import.meta.env.VITE_APP_TITLE;
       </v-app-bar-title>
 
       <v-btn variant="text" prepend-icon="mdi-home" to="/">Home</v-btn>
-      <v-btn variant="text" prepend-icon="mdi-information" to="/about">About</v-btn>
     </v-app-bar>
 
     <v-main>

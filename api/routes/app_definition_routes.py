@@ -4,7 +4,7 @@ from sqlalchemy import update
 from sqlmodel import select
 
 from api.deps import SessionDep
-from api.models.AppDefinition import (
+from api.models.app_definition import (
     AppDefinition,
     AppDefinitionCreateSchema,
     AppDefinitionDashboardSchema,
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/app-definition", tags=["AppDefinition"])
 
 
 @router.get(
-    "/app-definitions/",
+    "/",
     tags=["AppDefinition"],
     response_model=list[AppDefinitionDashboardSchema],
 )
@@ -28,7 +28,7 @@ def get_all_apps(
 
 
 @router.get(
-    "/app-definitions/{app_id}/",
+    "/{app_id}/",
     tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
@@ -47,7 +47,7 @@ def get_app_definition_by_id(
 
 
 @router.post(
-    "/app-definitions/",
+    "/",
     tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
@@ -60,7 +60,7 @@ def create_app_definition(app_def: AppDefinitionCreateSchema, session: SessionDe
 
 
 @router.put(
-    "/app-definitions/{app_def_id}/",
+    "/{app_def_id}/",
     tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
@@ -87,7 +87,7 @@ def update_app_definition(
         )
 
 
-@router.delete("/app-definition/{app_def_id}/", tags=["AppDefinition"])
+@router.delete("/{app_def_id}/", tags=["AppDefinition"])
 def delete_app_definition(app_def_id: int, session: SessionDep):
     existing_app_def = session.exec(
         select(AppDefinition).where(AppDefinition.id == app_def_id)

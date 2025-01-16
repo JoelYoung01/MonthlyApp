@@ -3,7 +3,7 @@ from sqlalchemy import update
 from sqlmodel import select
 
 from api.deps import SessionDep
-from api.models.Requirement import (
+from api.models.requirement import (
     Requirement,
     RequirementCreateSchema,
     RequirementDetailSchema,
@@ -13,22 +13,8 @@ from api.models.Requirement import (
 router = APIRouter(prefix="/requirement", tags=["Requirement"])
 
 
-@router.get(
-    "/requirements/{req_id}/",
-    tags=["Requirement"],
-    response_model=RequirementDetailSchema,
-)
-def get_requirement_by_id(req_id: int, session: SessionDep):
-    req = session.exec(select(Requirement).where(Requirement.id == req_id)).first()
-    if not req:
-        raise HTTPException(
-            status_code=404, detail=f"Requirement with id {req_id} not found."
-        )
-    return req
-
-
 @router.post(
-    "/requirements/",
+    "/",
     tags=["Requirement"],
     response_model=RequirementDetailSchema,
 )
@@ -44,7 +30,7 @@ def create_requirement(
 
 
 @router.put(
-    "/requirements/{req_id}/",
+    "/{req_id}/",
     tags=["Requirement"],
     response_model=RequirementDetailSchema,
 )
@@ -73,7 +59,7 @@ def update_requirement(
         )
 
 
-@router.delete("/requirements/{req_id}/", tags=["Requirement"])
+@router.delete("/{req_id}/", tags=["Requirement"])
 def delete_requirement(req_id: int, session: SessionDep):
     existing_requirement = session.exec(
         select(Requirement).where(Requirement.id == req_id)
