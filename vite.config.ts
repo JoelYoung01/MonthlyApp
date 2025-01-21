@@ -13,7 +13,11 @@ export default defineConfig({
       template: { transformAssetUrls }
     }),
     vueDevTools(),
-    vuetify(),
+    vuetify({
+      autoImport: {
+        labs: true
+      }
+    }),
     AutoImport({
       // https://github.com/unplugin/unplugin-auto-import?tab=readme-ov-file#configuration
       include: [/\.vue$/, /\.vue\?vue/, /\.ts$/],

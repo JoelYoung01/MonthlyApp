@@ -17,7 +17,6 @@ router = APIRouter(prefix="/app-definition", tags=["AppDefinition"])
 
 @router.get(
     "/",
-    tags=["AppDefinition"],
     response_model=list[AppDefinitionDashboardSchema],
 )
 def get_all_apps(
@@ -29,7 +28,6 @@ def get_all_apps(
 
 @router.get(
     "/{app_id}/",
-    tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
 def get_app_definition_by_id(
@@ -48,7 +46,6 @@ def get_app_definition_by_id(
 
 @router.post(
     "/",
-    tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
 def create_app_definition(app_def: AppDefinitionCreateSchema, session: SessionDep):
@@ -61,7 +58,6 @@ def create_app_definition(app_def: AppDefinitionCreateSchema, session: SessionDe
 
 @router.put(
     "/{app_def_id}/",
-    tags=["AppDefinition"],
     response_model=AppDefinitionDetailSchema,
 )
 def update_app_definition(
@@ -87,7 +83,7 @@ def update_app_definition(
         )
 
 
-@router.delete("/{app_def_id}/", tags=["AppDefinition"])
+@router.delete("/{app_def_id}/")
 def delete_app_definition(app_def_id: int, session: SessionDep):
     existing_app_def = session.exec(
         select(AppDefinition).where(AppDefinition.id == app_def_id)

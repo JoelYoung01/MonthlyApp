@@ -1,11 +1,57 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import type { AppDefinition } from "@/types";
-import { formatDate } from "@/utils";
 
 const route = useRoute();
+const router = useRouter();
 
 const detail = ref<AppDefinition>();
+const form = reactive({
+  id: null as number | null,
+  name: null as string | null,
+  start_date: null as string | null,
+  due_date: null as string | null,
+  description: null as string | null
+});
+const defaultReq = {
+  id: null as number | null,
+  name: null as string | null,
+  description: null as string | null
+};
+const formValid = ref(false);
+const requirementForms = reactive<(typeof defaultReq)[]>([]);
+
+const creating = computed(() => {
+  return !route.params.app_definition_id;
+});
+const canSubmit = computed(() => {
+  return formValid.value && requirementForms.length > 0;
+});
+
+const required = (val: string) => !!val || "Required";
+function addReq() {
+  requirementForms.push({ ...defaultReq });
+}
+function delReq(index: number) {
+  requirementForms.splice(index, 1);
+}
+
+function fillForm() {
+  if (!detail.value) return;
+  for (const key in form) {
+    form[key as keyof typeof form] = (detail.value[key as keyof typeof detail.value] ??
+      null) as any;
+  }
+
+  for (const reqDetail of detail.value.requirements) {
+    const reqForm = { ...defaultReq };
+    for (const key in defaultReq) {
+      reqForm[key as keyof typeof reqForm] = (reqDetail[key as keyof typeof reqDetail] ??
+        null) as any;
+    }
+    requirementForms.push(reqForm);
+  }
+}
 
 async function loadAppDefinition() {
   try {
@@ -15,90 +61,162 @@ async function loadAppDefinition() {
       throw new Error(`Response status: ${response.status}`);
     }
     detail.value = await response.json();
+    fillForm();
   } catch (er) {
     console.error(er);
   }
 }
 
-loadAppDefinition();
+async function save() {
+  try {
+    let appDefId = null;
+
+    if (creating.value) {
+      const url = `${import.meta.env.VITE_API_URL}/app-definition/`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      if (!response.ok) throw new Error("An error occurred while saving");
+      const data = await response.json();
+      appDefId = data.id;
+    } else {
+      const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.query.app_definition_id}/`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      if (!response.ok) throw new Error("An error occurred while saving");
+      const data = await response.json();
+      appDefId = data.id;
+    }
+
+    const createRequirements = requirementForms
+      .filter((reqForm) => !reqForm.id)
+      .map((req) =>
+        fetch(`${import.meta.env.VITE_API_URL}/requirement/`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ...req, app_definition_id: appDefId })
+        })
+      );
+
+    const updateRequirements = requirementForms
+      .filter((reqForm) => reqForm.id)
+      .map((req) =>
+        fetch(`${import.meta.env.VITE_API_URL}/requirement/${req.id}/`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(req)
+        })
+      );
+
+    const deleteRequirements =
+      detail.value?.requirements
+        .filter((reqDetail) => !requirementForms.some((reqForm) => reqForm.id === reqDetail.id))
+        .map((req) =>
+          fetch(`${import.meta.env.VITE_API_URL}/requirement/${req.id}/`, { method: "DELETE" })
+        ) ?? [];
+
+    await Promise.all([...createRequirements, ...updateRequirements, ...deleteRequirements]);
+    router.push(`/app-definition/${appDefId}/detail`);
+  } catch (er) {
+    console.error(er);
+  }
+}
+
+if (!creating.value) {
+  loadAppDefinition();
+}
 </script>
 
 <template>
-  <v-container class="d-flex flex-column gap-2">
-    <v-card class="d-flex align-center pa-2 gap-2">
-      <h1>Monthly App Challenge</h1>
+  <v-container>
+    <v-form v-model="formValid" class="d-flex flex-column gap-2">
+      <v-card class="d-flex align-center pa-3 gap-2">
+        <h1>{{ creating ? "Create New" : "Update" }} App Definition</h1>
 
-      <v-spacer />
+        <v-spacer />
 
-      <v-btn prepend-icon="mdi-pencil" color="primary">Edit Definition</v-btn>
-      <v-btn prepend-icon="mdi-plus" color="success">Add Submission</v-btn>
-    </v-card>
-    <v-card class="pa-2">
-      <v-row>
-        <v-col cols="3">
-          <dt>Start Date</dt>
-          <dd>{{ formatDate(detail?.start_date) }}</dd>
-        </v-col>
-        <v-col cols="3">
-          <dt>Due Date</dt>
-          <dd>{{ formatDate(detail?.due_date) }}</dd>
-        </v-col>
-        <v-col cols="3">
-          <dt>Description</dt>
-          <dd>{{ detail?.description }}</dd>
-        </v-col>
-      </v-row>
-    </v-card>
+        <v-btn prepend-icon="mdi-floppy" color="success" :disabled="!canSubmit" @click="save()"
+          >Save Changes</v-btn
+        >
+      </v-card>
+      <v-card class="pa-3">
+        <h2>Details</h2>
+        <v-row>
+          <v-col cols="4">
+            <v-text-field v-model="form.name" :rules="[required]" label="Name" />
+          </v-col>
+          <v-col cols="4">
+            <v-date-input v-model="form.start_date" :rules="[required]" label="Start Date" />
+            <v-date-input v-model="form.due_date" :rules="[required]" label="Due Date" />
+          </v-col>
+          <v-col cols="4">
+            <v-textarea v-model="form.description" label="Description"></v-textarea>
+          </v-col>
+        </v-row>
+      </v-card>
 
-    <v-card class="pa-2">
-      <h3>Requirements</h3>
-      <v-table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="req in detail?.requirements ?? []" :key="req.id">
-            <td>{{ req.name }}</td>
-            <td>{{ req.description }}</td>
-          </tr>
-          <tr v-if="detail?.requirements.length === 0">
-            <td colspan="2">No requirements defined for this App.</td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
-
-    <v-card class="pa-2">
-      <h3>Your Submissions</h3>
-      <v-table>
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Created On</th>
-            <th>Submitted On</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Submitted</td>
-            <td>Jan 16th, 2025</td>
-            <td>Jan 16th, 2025</td>
-            <td>
-              <v-btn variant="text" color="red" icon="mdi-delete" />
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
+      <v-card class="pa-3">
+        <div class="d-flex align-end">
+          <h2>Requirements</h2>
+          <v-spacer />
+          <v-btn prepend-icon="mdi-plus" color="primary" size="small" @click="addReq()">
+            Add Requirement
+          </v-btn>
+        </div>
+        <v-table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th class="action-col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(reqForm, i) in requirementForms ?? []" :key="i">
+              <td>
+                <v-text-field
+                  v-model="reqForm.name"
+                  density="compact"
+                  hide-details
+                  class="py-1"
+                  :rules="[required]"
+                />
+              </td>
+              <td>
+                <v-text-field
+                  v-model="reqForm.description"
+                  density="compact"
+                  hide-details
+                  class="py-1"
+                  :rules="[required]"
+                />
+              </td>
+              <td>
+                <v-btn size="small" icon="mdi-delete" color="red" @click="delReq(i)" />
+              </td>
+            </tr>
+            <tr v-if="requirementForms.length === 0">
+              <td colspan="2">
+                <v-btn prepend-icon="mdi-plus" color="primary" @click="addReq()">
+                  Add Requirement
+                </v-btn>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card>
+    </v-form>
   </v-container>
 </template>
 
 <style scoped>
-.d-flex dl {
-  flex: 0 0 33.33%;
+.action-col {
+  /* Basis of 0 shrinks col as much as possible */
+  width: 0rem;
 }
 </style>
