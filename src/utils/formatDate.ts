@@ -1,11 +1,18 @@
-export function formatDate(dateString?: string, includeTime = false): string {
+export function formatDate(
+  dateString?: string,
+  excludeCurrentYear = false,
+  includeTime = false
+): string {
   if (!dateString) return "";
 
   const date = new Date(dateString);
+  const today = new Date();
+
+  const sameYear = date.getFullYear() === today.getFullYear();
 
   const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
+    year: sameYear && excludeCurrentYear ? undefined : "numeric",
+    month: "short",
     day: "numeric"
   };
 

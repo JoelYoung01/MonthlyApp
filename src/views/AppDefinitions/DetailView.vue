@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
+import { useDate } from "vuetify";
 import type { AppDefinition } from "@/types";
 import { formatDate } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
+const date = useDate();
 
 const detail = ref<AppDefinition>();
 
@@ -31,15 +33,21 @@ loadAppDefinition();
 
 <template>
   <v-container class="d-flex flex-column gap-2">
-    <v-card class="d-flex align-center pa-2 gap-2">
-      <h1>Monthly App Challenge</h1>
+    <v-card class="d-flex align-center pa-3 gap-2">
+      <h1>{{ detail?.name }}</h1>
 
       <v-spacer />
 
-      <v-btn prepend-icon="mdi-pencil" color="primary">Edit Definition</v-btn>
+      <v-btn
+        prepend-icon="mdi-pencil"
+        color="primary"
+        :to="`/app-definition/${route.params.app_definition_id}/update`"
+      >
+        Edit Definition
+      </v-btn>
       <v-btn prepend-icon="mdi-plus" color="success">Add Submission</v-btn>
     </v-card>
-    <v-card class="pa-2">
+    <v-card class="pa-3">
       <v-row>
         <v-col cols="3">
           <dt>Start Date</dt>
@@ -56,7 +64,7 @@ loadAppDefinition();
       </v-row>
     </v-card>
 
-    <v-card class="pa-2">
+    <v-card class="pa-3">
       <h3>Requirements</h3>
       <v-table>
         <thead>
@@ -77,7 +85,7 @@ loadAppDefinition();
       </v-table>
     </v-card>
 
-    <v-card class="pa-2">
+    <v-card class="pa-3">
       <h3>Your Submissions</h3>
       <v-table>
         <thead>

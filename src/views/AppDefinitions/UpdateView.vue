@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import type { AppDefinition } from "@/types";
+import { onMounted } from "vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -26,6 +27,10 @@ const creating = computed(() => {
 });
 const canSubmit = computed(() => {
   return formValid.value && requirementForms.length > 0;
+});
+const cancelTo = computed(() => {
+  if (creating.value) return `/app-definition/list`;
+  return `/app-definition/${route.params.app_definition_id}/detail`;
 });
 
 const required = (val: string) => !!val || "Required";
@@ -57,6 +62,7 @@ async function loadAppDefinition() {
   try {
     const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
     const response = await fetch(url);
+    if (response.status === 404) router.push("/definition-not-found");
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
     }
@@ -82,7 +88,7 @@ async function save() {
       const data = await response.json();
       appDefId = data.id;
     } else {
-      const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.query.app_definition_id}/`;
+      const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
       const response = await fetch(url, {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -127,9 +133,11 @@ async function save() {
   }
 }
 
-if (!creating.value) {
-  loadAppDefinition();
-}
+onMounted(() => {
+  if (!creating.value) {
+    loadAppDefinition();
+  }
+});
 </script>
 
 <template>
@@ -140,9 +148,10 @@ if (!creating.value) {
 
         <v-spacer />
 
-        <v-btn prepend-icon="mdi-floppy" color="success" :disabled="!canSubmit" @click="save()"
-          >Save Changes</v-btn
-        >
+        <v-btn prepend-icon="mdi-close" color="secondary" :to="cancelTo"> Cancel </v-btn>
+        <v-btn prepend-icon="mdi-floppy" color="success" :disabled="!canSubmit" @click="save()">
+          Save Changes
+        </v-btn>
       </v-card>
       <v-card class="pa-3">
         <h2>Details</h2>
@@ -151,8 +160,18 @@ if (!creating.value) {
             <v-text-field v-model="form.name" :rules="[required]" label="Name" />
           </v-col>
           <v-col cols="4">
-            <v-date-input v-model="form.start_date" :rules="[required]" label="Start Date" />
-            <v-date-input v-model="form.due_date" :rules="[required]" label="Due Date" />
+            <v-text-field
+              v-model="form.start_date"
+              :rules="[required]"
+              label="Start Date"
+              type="date"
+            />
+            <v-text-field
+              v-model="form.due_date"
+              :rules="[required]"
+              label="Due Date"
+              type="date"
+            />
           </v-col>
           <v-col cols="4">
             <v-textarea v-model="form.description" label="Description"></v-textarea>
