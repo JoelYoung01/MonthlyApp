@@ -1,5 +1,4 @@
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import update
 from sqlmodel import select
 
@@ -7,24 +6,11 @@ from api.deps import SessionDep
 from api.models.app_submission import (
     AppSubmission,
     AppSubmissionCreateSchema,
-    AppSubmissionDashboardSchema,
     AppSubmissionDetailSchema,
     AppSubmissionUpdateSchema,
 )
 
 router = APIRouter(prefix="/app-submission", tags=["AppSubmission"])
-
-
-@router.get(
-    "/",
-    tags=["AppSubmission"],
-    response_model=list[AppSubmissionDashboardSchema],
-)
-def get_all_app_submissions(
-    session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
-):
-    apps = session.exec(select(AppSubmission).offset(offset).limit(limit)).all()
-    return apps
 
 
 @router.get(

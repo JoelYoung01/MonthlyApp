@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
 
 from api.models.requirement import Requirement, RequirementDetailSchema
+from api.models.app_submission import AppSubmission, AppSubmissionDetailSchema
 
 
 class AppDefinition(SQLModel, table=True):
@@ -13,6 +14,7 @@ class AppDefinition(SQLModel, table=True):
     description: str
 
     requirements: list["Requirement"] = Relationship()
+    submissions: list["AppSubmission"] = Relationship()
 
 
 class AppDefinitionDashboardSchema(SQLModel):
@@ -30,6 +32,7 @@ class AppDefinitionDetailSchema(SQLModel):
     due_date: datetime
     description: str
     requirements: list[RequirementDetailSchema]
+    submissions: list[AppSubmissionDetailSchema]
 
 
 class AppDefinitionCreateSchema(SQLModel):

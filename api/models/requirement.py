@@ -13,16 +13,16 @@ class RequirementDetailSchema(SQLModel):
     id: int
     name: str
     description: str
-    related_app_id: int
+    app_definition_id: int
 
 
 class RequirementCreateSchema(SQLModel):
     name: str
     description: str
-    related_app_id: int
+    app_definition_id: int
 
 
 class RequirementUpdateSchema(SQLModel):
     name: str | None = None
     description: str | None = None
-    related_app_id: int | None = None
+    app_definition_id: int | None = None

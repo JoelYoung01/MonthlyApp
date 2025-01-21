@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
-// import NotFound from "@/views/NotFound.vue";
+import NotFound from "@/views/NotFound.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,17 +23,20 @@ const router = createRouter({
       name: "AppDefinition",
       children: [
         {
-          path: "1",
+          path: ":app_definition_id",
           name: "AppDefinitionDetail",
+          meta: {
+            useShadedBackground: true
+          },
           component: () => import("@/views/AppDefinitions/DetailView.vue")
         }
       ]
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "notFound",
+      component: NotFound
     }
-    // {
-    //   path: "*",
-    //   name: "notFound",
-    //   component: NotFound
-    // }
   ]
 });
 

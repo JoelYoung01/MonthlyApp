@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import type { AppDefinition } from "@/types";
 import { useRoute } from "vue-router";
+import type { AppDefinition } from "@/types";
+import { formatDate } from "@/utils";
 
 const route = useRoute();
 
 const detail = ref<AppDefinition>();
 
 async function loadAppDefinition() {
-  const result = await fetch(
-    `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}`
-  );
-  detail.value = await result.json();
+  try {
+    const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+    detail.value = await response.json();
+  } catch (er) {
+    console.error(er);
+  }
 }
 
 loadAppDefinition();
@@ -30,15 +37,15 @@ loadAppDefinition();
       <v-row>
         <v-col cols="3">
           <dt>Start Date</dt>
-          <dd>Jan 1st, 2025</dd>
+          <dd>{{ formatDate(detail?.start_date) }}</dd>
         </v-col>
         <v-col cols="3">
           <dt>Due Date</dt>
-          <dd>Jan 31st, 2025</dd>
+          <dd>{{ formatDate(detail?.due_date) }}</dd>
         </v-col>
         <v-col cols="3">
           <dt>Description</dt>
-          <dd>This is an app designed to challenge you to build an app each month.</dd>
+          <dd>{{ detail?.description }}</dd>
         </v-col>
       </v-row>
     </v-card>
@@ -53,17 +60,12 @@ loadAppDefinition();
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Live App</td>
-            <td>The App is live and accessible from internet.</td>
+          <tr v-for="req in detail?.requirements ?? []" :key="req.id">
+            <td>{{ req.name }}</td>
+            <td>{{ req.description }}</td>
           </tr>
-          <tr>
-            <td>Supports Users</td>
-            <td>Can support users and is specific to each user.</td>
-          </tr>
-          <tr>
-            <td>Apps filled out for 2025</td>
-            <td>All app ideas for 2025 are in.</td>
+          <tr v-if="detail?.requirements.length === 0">
+            <td colspan="2">No requirements defined for this App.</td>
           </tr>
         </tbody>
       </v-table>
