@@ -11,24 +11,41 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: "/about",
-      name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import("../views/AboutView.vue")
-    },
-    {
       path: "/app-definition",
-      name: "AppDefinition",
       children: [
         {
-          path: ":app_definition_id",
-          name: "AppDefinitionDetail",
+          path: "list",
+          name: "AppDefinitionList",
+          component: () => import("@/views/AppDefinitions/ListView.vue")
+        },
+        {
+          path: "create",
+          name: "AppDefinitionCreate",
           meta: {
             useShadedBackground: true
           },
-          component: () => import("@/views/AppDefinitions/DetailView.vue")
+          component: () => import("@/views/AppDefinitions/UpdateView.vue")
+        },
+        {
+          path: ":app_definition_id(\\d+)",
+          children: [
+            {
+              name: "AppDefinitionDetail",
+              path: "detail",
+              meta: {
+                useShadedBackground: true
+              },
+              component: () => import("@/views/AppDefinitions/DetailView.vue")
+            },
+            {
+              path: "update",
+              name: "AppDefinitionUpdate",
+              meta: {
+                useShadedBackground: true
+              },
+              component: () => import("@/views/AppDefinitions/UpdateView.vue")
+            }
+          ]
         }
       ]
     },

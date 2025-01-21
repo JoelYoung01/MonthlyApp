@@ -26,7 +26,7 @@ getAppDefinitions();
           <v-card-text> This app challenges you to build one app per month. </v-card-text>
           <v-card-actions>
             <v-btn color="success">Update Submission</v-btn>
-            <v-btn to="/app-definition/1">View Details</v-btn>
+            <v-btn to="/app-definition/1/detail">View Details</v-btn>
           </v-card-actions>
         </v-card>
       </div>

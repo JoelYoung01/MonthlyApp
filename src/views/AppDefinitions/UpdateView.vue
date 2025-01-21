@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import type { AppDefinition } from "@/types";
 import { formatDate } from "@/utils";
 
 const route = useRoute();
-const router = useRouter();
 
 const detail = ref<AppDefinition>();
 
@@ -12,11 +11,6 @@ async function loadAppDefinition() {
   try {
     const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
     const response = await fetch(url);
-
-    if (response.status === 404) {
-      router.push("/definition-not-found");
-    }
-
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
     }

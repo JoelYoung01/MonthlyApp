@@ -23,7 +23,7 @@ const mainClassList = computed(() => {
         <RouterLink class="text-decoration-none text-white" to="/">{{ title }}</RouterLink>
       </v-app-bar-title>
 
-      <v-btn variant="text" prepend-icon="mdi-list-box" to="/app-definitions" class="mx-1">
+      <v-btn variant="text" prepend-icon="mdi-list-box" to="/app-definition/list" class="mx-1">
         Definitions
       </v-btn>
 
