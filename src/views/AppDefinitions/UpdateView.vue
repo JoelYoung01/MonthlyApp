@@ -40,6 +40,20 @@ function addReq() {
 function delReq(index: number) {
   requirementForms.splice(index, 1);
 }
+function processDate(dateString: string | null) {
+  if (!dateString) {
+    return null;
+  } else if (dateString.includes("T")) {
+    if (!dateString.includes("Z")) dateString += "Z";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } else {
+    return new Date(`${dateString}T00:00:00`).toISOString().replace("Z", "");
+  }
+}
 
 function fillForm() {
   if (!detail.value) return;
@@ -161,16 +175,18 @@ onMounted(() => {
           </v-col>
           <v-col cols="4">
             <v-text-field
-              v-model="form.start_date"
-              :rules="[required]"
               label="Start Date"
+              :rules="[required]"
               type="date"
+              :model-value="processDate(form.start_date)"
+              @update:model-value="form.start_date = processDate($event)"
             />
             <v-text-field
-              v-model="form.due_date"
-              :rules="[required]"
               label="Due Date"
+              :rules="[required]"
               type="date"
+              :model-value="processDate(form.due_date)"
+              @update:model-value="form.due_date = processDate($event)"
             />
           </v-col>
           <v-col cols="4">

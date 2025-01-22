@@ -5,6 +5,12 @@ export function formatDate(
 ): string {
   if (!dateString) return "";
 
+  const isoNoTzRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)$/;
+  if (isoNoTzRegex.test(dateString)) {
+    // All iso date times are assumed to be in UTC, since SQLite can't store TZ
+    dateString += "Z";
+  }
+
   const date = new Date(dateString);
   const today = new Date();
 
@@ -19,11 +25,7 @@ export function formatDate(
   if (includeTime) {
     options.hour = "2-digit";
     options.minute = "2-digit";
-    options.second = "2-digit";
   }
 
-  return (
-    date.toLocaleDateString(undefined, options) +
-    (includeTime ? ` ${date.toLocaleTimeString(undefined, options)}` : "")
-  );
+  return date.toLocaleDateString(undefined, options);
 }
