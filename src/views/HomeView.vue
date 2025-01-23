@@ -1,40 +1,65 @@
 <script setup lang="ts">
-import type { AppDefinition } from "@/types";
+import AppDefinitionCard from "@/components/AppDefinitionCard.vue";
+import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
+import type { AppDefinitionDashboard } from "@/types";
+import { onMounted } from "vue";
 
-const appDefinitions = ref<AppDefinition[]>();
+const appDefinitions = ref<AppDefinitionDashboard[]>();
+const activeApps = ref<AppDefinitionDashboard[]>();
+const submitCardVisible = ref(false);
+const submitDefinition = ref<AppDefinitionDashboard>();
+
+const completeApps = computed(() => {
+  return appDefinitions.value?.filter((app) => new Date(app.due_date + "Z") < new Date());
+});
+
+function onSubmitClick(definition: AppDefinitionDashboard) {
+  submitDefinition.value = definition;
+  submitCardVisible.value = true;
+}
 
 async function getAppDefinitions() {
   const result = await fetch(`${import.meta.env.VITE_API_URL}/app-definition/`);
   appDefinitions.value = await result.json();
+
+  const activeResult = await fetch(`${import.meta.env.VITE_API_URL}/app-definition/active/`);
+  activeApps.value = await activeResult.json();
 }
 
-getAppDefinitions();
+onMounted(() => {
+  getAppDefinitions();
+});
 </script>
 
 <template>
   <v-container>
     <section>
       <h2>Active App</h2>
-      <div class="d-flex">
-        <v-card class="pa-2">
-          <v-card-title>
-            <h5>Monthly App Challenge</h5>
-          </v-card-title>
-          <v-card-subtitle>
-            <span class="fw-bold">Due Date: </span> Jan 31st, 2025
-          </v-card-subtitle>
-          <v-card-text> This app challenges you to build one app per month. </v-card-text>
-          <v-card-actions>
-            <v-btn color="success">Update Submission</v-btn>
-            <v-btn to="/app-definition/1/detail">View Details</v-btn>
-          </v-card-actions>
-        </v-card>
-      </div>
+      <v-row>
+        <v-col v-for="definition in activeApps" :key="definition.id" cols="4">
+          <AppDefinitionCard
+            :definition="definition"
+            include-actions
+            @add-submit="onSubmitClick(definition)"
+          />
+        </v-col>
+      </v-row>
     </section>
 
     <section>
-      <h2>Past Submissions</h2>
+      <h2>Completed Applications</h2>
+      <v-row>
+        <v-col v-for="definition in completeApps" :key="definition.id" cols="4">
+          <AppDefinitionCard
+            :definition="definition"
+            include-actions
+            @add-submit="onSubmitClick(definition)"
+          />
+        </v-col>
+      </v-row>
     </section>
+
+    <AppSubmissionModal v-model="submitCardVisible" :definition="submitDefinition" />
   </v-container>
 </template>
 

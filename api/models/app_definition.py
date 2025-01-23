@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 
 from pydantic import computed_field
@@ -27,9 +27,9 @@ class AppDefinition(SQLModel, table=True):
     @computed_field
     @property
     def status(self) -> str:
-        if self.start_date > datetime.now(timezone.utc):
+        if self.start_date > datetime.now():
             return AppDefinitionStatus.Future
-        elif self.due_date < datetime.now(timezone.utc):
+        elif self.due_date < datetime.now():
             return AppDefinitionStatus.Complete
         else:
             return AppDefinitionStatus.Active
@@ -45,9 +45,9 @@ class AppDefinitionDashboardSchema(SQLModel):
     @computed_field
     @property
     def status(self) -> str:
-        if self.start_date > datetime.now(timezone.utc):
+        if self.start_date > datetime.now():
             return AppDefinitionStatus.Future
-        elif self.due_date < datetime.now(timezone.utc):
+        elif self.due_date < datetime.now():
             return AppDefinitionStatus.Complete
         else:
             return AppDefinitionStatus.Active

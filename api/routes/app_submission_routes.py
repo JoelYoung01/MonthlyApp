@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import update
 from sqlmodel import select
@@ -38,11 +40,16 @@ def get_app_submission_by_id(
     response_model=AppSubmissionDetailSchema,
 )
 def create_app_submission(app_def: AppSubmissionCreateSchema, session: SessionDep):
-    db_app_dev = AppSubmission.model_validate(app_def)
-    session.add(db_app_dev)
+    new_def = app_def.model_dump()
+    new_def["created_on"] = datetime.now(timezone.utc).isoformat()
+    new_def["created_by"] = 1  # TODO: Add User from request
+
+    db_app_def = AppSubmission.model_validate(new_def)
+
+    session.add(db_app_def)
     session.commit()
-    session.refresh(db_app_dev)
-    return db_app_dev
+    session.refresh(db_app_def)
+    return db_app_def
 
 
 @router.put(

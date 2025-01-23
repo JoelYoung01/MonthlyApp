@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import update
@@ -36,8 +36,8 @@ def get_all_apps(
 def get_active_apps(session: SessionDep):
     apps = session.exec(
         select(AppDefinition).where(
-            AppDefinition.start_date < datetime.now(timezone.utc),
-            AppDefinition.due_date > datetime.now(timezone.utc),
+            AppDefinition.start_date < datetime.now(),
+            AppDefinition.due_date > datetime.now(),
         )
     ).all()
     return apps
