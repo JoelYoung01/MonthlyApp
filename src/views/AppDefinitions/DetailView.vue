@@ -83,22 +83,20 @@ loadAppDefinition();
       </v-table>
     </v-card>
 
-    <v-card class="pa-3">
+    <v-card v-if="detail?.submissions.length" class="pa-3">
       <h3>Your Submissions</h3>
       <v-table>
         <thead>
           <tr>
-            <th>Status</th>
-            <th>Created On</th>
+            <th>Link</th>
             <th>Submitted On</th>
-            <th></th>
+            <th class="action-col"></th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Submitted</td>
-            <td>Jan 16th, 2025</td>
-            <td>Jan 16th, 2025</td>
+          <tr v-for="submission in detail?.submissions ?? []" :key="submission.id">
+            <td>{{ submission.link }}</td>
+            <td>{{ formatDate(submission.created_on) }}</td>
             <td>
               <v-btn variant="text" color="red" icon="mdi-delete" />
             </td>
@@ -112,5 +110,9 @@ loadAppDefinition();
 <style scoped>
 .d-flex dl {
   flex: 0 0 33.33%;
+}
+
+.action-col {
+  width: 0px;
 }
 </style>
