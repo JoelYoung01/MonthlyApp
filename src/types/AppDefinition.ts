@@ -7,6 +7,7 @@ export type AppDefinition = {
   start_date: string;
   due_date: string;
   description: string;
+  status: AppDefinitionStatus;
   requirements: Requirement[];
   submissions: AppSubmission[];
 };

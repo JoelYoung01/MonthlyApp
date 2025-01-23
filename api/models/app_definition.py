@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from pydantic import computed_field
@@ -24,6 +24,16 @@ class AppDefinition(SQLModel, table=True):
     requirements: list["Requirement"] = Relationship()
     submissions: list["AppSubmission"] = Relationship()
 
+    @computed_field
+    @property
+    def status(self) -> str:
+        if self.start_date > datetime.now(timezone.utc):
+            return AppDefinitionStatus.Future
+        elif self.due_date < datetime.now(timezone.utc):
+            return AppDefinitionStatus.Complete
+        else:
+            return AppDefinitionStatus.Active
+
 
 class AppDefinitionDashboardSchema(SQLModel):
     id: int
@@ -35,9 +45,9 @@ class AppDefinitionDashboardSchema(SQLModel):
     @computed_field
     @property
     def status(self) -> str:
-        if self.start_date > datetime.now():
+        if self.start_date > datetime.now(timezone.utc):
             return AppDefinitionStatus.Future
-        elif self.due_date < datetime.now():
+        elif self.due_date < datetime.now(timezone.utc):
             return AppDefinitionStatus.Complete
         else:
             return AppDefinitionStatus.Active
