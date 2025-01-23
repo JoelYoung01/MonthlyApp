@@ -1,9 +1,17 @@
 from datetime import datetime
+from enum import Enum
 
+from pydantic import computed_field
 from sqlmodel import Field, Relationship, SQLModel
 
 from api.models.requirement import Requirement, RequirementDetailSchema
 from api.models.app_submission import AppSubmission, AppSubmissionDetailSchema
+
+
+class AppDefinitionStatus(Enum):
+    Active = 10
+    Complete = 20
+    Future = 30
 
 
 class AppDefinition(SQLModel, table=True):
@@ -23,6 +31,16 @@ class AppDefinitionDashboardSchema(SQLModel):
     start_date: datetime
     due_date: datetime
     description: str
+
+    @computed_field
+    @property
+    def status(self) -> str:
+        if self.start_date > datetime.now():
+            return AppDefinitionStatus.Future
+        elif self.due_date < datetime.now():
+            return AppDefinitionStatus.Complete
+        else:
+            return AppDefinitionStatus.Active
 
 
 class AppDefinitionDetailSchema(SQLModel):

@@ -51,7 +51,7 @@ function processDate(dateString: string | null) {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   } else {
-    return new Date(`${dateString}T00:00:00`).toISOString().replace("Z", "");
+    return new Date(`${dateString}T00:00:00`).toISOString().replace("Z", ""); // Assume midnight local time
   }
 }
 

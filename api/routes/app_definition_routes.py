@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import update
@@ -22,7 +23,23 @@ router = APIRouter(prefix="/app-definition", tags=["AppDefinition"])
 def get_all_apps(
     session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
 ):
-    apps = session.exec(select(AppDefinition).offset(offset).limit(limit)).all()
+    apps = session.exec(
+        select(AppDefinition)
+        .order_by(AppDefinition.due_date.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return apps
+
+
+@router.get("/active/", response_model=list[AppDefinitionDashboardSchema])
+def get_active_apps(session: SessionDep):
+    apps = session.exec(
+        select(AppDefinition).where(
+            AppDefinition.start_date < datetime.now(),
+            AppDefinition.due_date > datetime.now(),
+        )
+    ).all()
     return apps
 
 

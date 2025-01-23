@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
-import { useDate } from "vuetify";
 import type { AppDefinition } from "@/types";
 import { formatDate } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
-const date = useDate();
 
 const detail = ref<AppDefinition>();
 
