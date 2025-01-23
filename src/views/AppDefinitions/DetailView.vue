@@ -2,11 +2,14 @@
 import { useRoute, useRouter } from "vue-router";
 import type { AppDefinition } from "@/types";
 import { formatDate } from "@/utils";
+import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
+import { onMounted } from "vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const detail = ref<AppDefinition>();
+const submitModalVisible = ref(false);
 
 async function loadAppDefinition() {
   try {
@@ -26,7 +29,23 @@ async function loadAppDefinition() {
   }
 }
 
-loadAppDefinition();
+async function deleteSubmission(submissionId: number | string) {
+  try {
+    const url = `${import.meta.env.VITE_API_URL}/app-submission/${submissionId}/`;
+    const options = {
+      method: "DELETE"
+    };
+    const response = await fetch(url, options);
+    if (!response.ok) throw new Error(response.statusText);
+    await loadAppDefinition();
+  } catch (er) {
+    console.error(er);
+  }
+}
+
+onMounted(() => {
+  loadAppDefinition();
+});
 </script>
 
 <template>
@@ -43,7 +62,9 @@ loadAppDefinition();
       >
         Edit Definition
       </v-btn>
-      <v-btn prepend-icon="mdi-plus" color="success">Add Submission</v-btn>
+      <v-btn prepend-icon="mdi-plus" color="success" @click="submitModalVisible = true"
+        >Add Submission</v-btn
+      >
     </v-card>
     <v-card class="pa-3">
       <v-row>
@@ -95,21 +116,34 @@ loadAppDefinition();
         </thead>
         <tbody>
           <tr v-for="submission in detail?.submissions ?? []" :key="submission.id">
-            <td>{{ submission.link }}</td>
+            <td>
+              <a :href="submission.link ?? '/bad-link'" target="_blank">{{ submission.link }}</a>
+            </td>
             <td>{{ formatDate(submission.created_on) }}</td>
             <td>
-              <v-btn variant="text" color="red" icon="mdi-delete" />
+              <v-btn
+                variant="text"
+                color="red"
+                icon="mdi-delete"
+                @click="deleteSubmission(submission.id)"
+              />
             </td>
           </tr>
         </tbody>
       </v-table>
     </v-card>
   </v-container>
+
+  <AppSubmissionModal
+    v-model="submitModalVisible"
+    :definition="detail"
+    @submit="loadAppDefinition()"
+  />
 </template>
 
 <style scoped>
-.d-flex dl {
-  flex: 0 0 33.33%;
+thead th {
+  font-weight: bold !important;
 }
 
 .action-col {

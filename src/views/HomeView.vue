@@ -35,7 +35,8 @@ onMounted(() => {
   <v-container>
     <section>
       <h2>Active App</h2>
-      <v-row>
+      <v-alert v-if="!activeApps?.length" type="info"> No Active Apps found in db. </v-alert>
+      <v-row v-else>
         <v-col v-for="definition in activeApps" :key="definition.id" cols="4">
           <AppDefinitionCard
             :definition="definition"
@@ -48,7 +49,8 @@ onMounted(() => {
 
     <section>
       <h2>Completed Applications</h2>
-      <v-row>
+      <v-alert v-if="!completeApps?.length" type="info"> No Completed Apps found in db. </v-alert>
+      <v-row v-else>
         <v-col v-for="definition in completeApps" :key="definition.id" cols="4">
           <AppDefinitionCard
             :definition="definition"

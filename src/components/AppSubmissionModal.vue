@@ -8,6 +8,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{
   "update:model-value": [value: boolean];
+  submit: [];
 }>();
 
 const form = reactive({
@@ -40,6 +41,7 @@ async function onSubmit() {
     if (!response.ok) throw new Error(response.statusText);
     resetForm();
     emit("update:model-value", false);
+    emit("submit");
   } catch (er) {
     console.error(er);
   }
