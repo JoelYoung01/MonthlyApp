@@ -1,14 +1,23 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
 import NotFound from "@/views/NotFound.vue";
+import AuthReceiver from "@/views/AuthReceiver.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      name: "home",
+      name: "Home",
       component: HomeView
+    },
+    {
+      path: "/google-auth-receiver",
+      name: "GoogleAuthReceiver",
+      component: AuthReceiver,
+      meta: {
+        authType: "Google"
+      }
     },
     {
       path: "/app-definition",

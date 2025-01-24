@@ -8,3 +8,6 @@ VITE_API_URL=http://localhost:8000/api
 
 # Deployment Environment
 ENV=development
+
+# Redirect Urls
+GOOGLE_REDIRECT_URL=http://localhost:8000/api/auth/google-auth-receiver

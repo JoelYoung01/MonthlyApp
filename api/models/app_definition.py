@@ -26,7 +26,7 @@ class AppDefinition(SQLModel, table=True):
 
     @computed_field
     @property
-    def status(self) -> str:
+    def status(self) -> AppDefinitionStatus:
         if self.start_date > datetime.now():
             return AppDefinitionStatus.Future
         elif self.due_date < datetime.now():
@@ -44,7 +44,7 @@ class AppDefinitionDashboardSchema(SQLModel):
 
     @computed_field
     @property
-    def status(self) -> str:
+    def status(self) -> AppDefinitionStatus:
         if self.start_date > datetime.now():
             return AppDefinitionStatus.Future
         elif self.due_date < datetime.now():

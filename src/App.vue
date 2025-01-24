@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from "vue-router";
+import GoogleLoginButton from "./components/GoogleLoginButton.vue";
 
 const route = useRoute();
 
@@ -33,6 +34,8 @@ const mainClassList = computed(() => {
     <v-main :class="mainClassList">
       <RouterView />
     </v-main>
+
+    <GoogleLoginButton />
   </v-app>
 </template>
 
