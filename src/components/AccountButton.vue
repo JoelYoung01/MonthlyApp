@@ -5,15 +5,13 @@ import GoogleLoginButton from "./GoogleLoginButton.vue";
 const sessionStore = useSessionStore();
 
 const dialogVisible = ref(false);
-const view = ref<"signin" | "signup" | "account">("signin");
 const title = computed(() => {
-  if (view.value === "signin") return "Sign In";
-  else if (view.value === "signup") return "Sign Up";
-  else return "Account";
+  if (sessionStore.currentUser) return "Account";
+  else return "Sign In";
 });
 
 function logout() {
-  //
+  sessionStore.logout();
 }
 </script>
 
@@ -24,26 +22,18 @@ function logout() {
     <v-dialog v-model="dialogVisible" activator="parent" max-width="300">
       <v-card>
         <v-card-title class="text-center">{{ title }}</v-card-title>
-        <v-card-text v-if="view === 'signup'">
-          <div class="d-flex justify-center">
-            <GoogleLoginButton view="signup" />
+        <v-card-text v-if="sessionStore.currentUser">
+          <div class="d-flex flex-column align-center">
+            <v-avatar :image="sessionStore.currentUser.avatar_url" size="75" class="mb-2" />
+            {{ sessionStore.currentUser.display_name }}
+            <v-btn color="primary" class="mt-4" @click="logout">Sign Out</v-btn>
           </div>
         </v-card-text>
-        <v-card-text v-else-if="view === 'signin'">
+        <v-card-text v-else>
           <div class="d-flex justify-center">
-            <GoogleLoginButton view="signin" />
+            <GoogleLoginButton />
           </div>
         </v-card-text>
-        <v-card-text v-else-if="view === 'account'">
-          <div class="d-flex justify-center">
-            <v-btn color="primary" @click="logout">Sign Out</v-btn>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="sessionStore.checkSession()">Verify Session</v-btn>
-          <v-spacer />
-        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-btn>

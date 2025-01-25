@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, index=True, primary_key=True)
+    avatar_url: str | None
     username: str
     email: str
     display_name: str

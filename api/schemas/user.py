@@ -8,3 +8,4 @@ class UserResponse(BaseModel):
     display_name: str
     admin: bool
     disabled: bool
+    avatar_url: str | None

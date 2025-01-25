@@ -60,6 +60,7 @@ def get_or_create_user_from_google_token(google_token, session: SessionDep):
             "email": google_token["email"],
             "display_name": google_token["name"],
             "google_user_id": google_token["sub"],
+            "avatar_url": google_token["picture"],
         }
         db_user = User.model_validate(new_user)
         session.add(db_user)

@@ -4,7 +4,7 @@ import type { InjectionKey, Ref } from "vue";
 export const googleAccountsLoadedKey = Symbol() as InjectionKey<Ref<boolean>>;
 
 const defaultOptions = {
-  prompt: true as boolean
+  prompt: false as boolean
 };
 
 /**
