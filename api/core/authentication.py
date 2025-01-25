@@ -70,7 +70,7 @@ def get_or_create_user_from_google_token(google_token, session: SessionDep):
 
 
 def create_access_token(google_token, session: SessionDep):
-    user = get_or_create_user_from_google_token(session, google_token)
+    user = get_or_create_user_from_google_token(google_token, session)
 
     # Create a long-lived session token
     access_token = jwt.encode(
@@ -95,7 +95,7 @@ def create_access_token(google_token, session: SessionDep):
     session.commit()
     session.refresh(db_token)
 
-    return access_token
+    return db_token
 
 
 def verify_session_token(access_token, session: SessionDep) -> Token | None:
@@ -104,9 +104,22 @@ def verify_session_token(access_token, session: SessionDep) -> Token | None:
         jwt.decode(
             access_token, settings.SECRET_KEY, algorithms=[settings.HASH_ALGORITHM]
         )
-        db_token = session.exec(select(Token).where(Token.access_token == access_token))
+        db_token = session.exec(
+            select(Token).where(Token.access_token == access_token)
+        ).first()
         return db_token
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
         return None
+
+
+def verify_google_token(encoded_google_token: str):
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_req
+
+    request = google_req.Request()
+    decoded_token = id_token.verify_oauth2_token(
+        encoded_google_token, request, settings.VITE_GOOGLE_CLIENT_ID
+    )
+    return decoded_token

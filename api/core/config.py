@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     HASH_ALGORITHM: str = "HS256"
     FRONTEND_HOST: str = "http://localhost:5173"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    VITE_GOOGLE_CLIENT_ID: str
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)

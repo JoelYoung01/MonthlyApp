@@ -1,13 +1,7 @@
-import type { InjectionKey, Reactive } from "vue";
+import { loginWithGoogle } from "@/utils/auth";
+import type { InjectionKey, Ref } from "vue";
 
-type CredResponseHandler = (response: google.accounts.id.CredentialResponse) => void;
-
-interface AccountsConfig {
-  loaded: boolean;
-  credResponseHandler: CredResponseHandler;
-}
-
-export const googleAccountsConfigKey = Symbol() as InjectionKey<Reactive<AccountsConfig>>;
+export const googleAccountsLoadedKey = Symbol() as InjectionKey<Ref<boolean>>;
 
 const defaultOptions = {
   prompt: true as boolean
@@ -18,25 +12,20 @@ const defaultOptions = {
  * https://developers.google.com/identity/gsi/web/reference/js-reference
  */
 export function install(app: any, options = defaultOptions) {
-  const config = reactive({
-    loaded: false,
-    credResponseHandler: () => {
-      console.debug("Login Attempted");
-    }
-  });
-  app.provide(googleAccountsConfigKey, config);
+  const loaded = ref(false);
+  app.provide(googleAccountsLoadedKey, loaded);
 
   // @ts-expect-error This exists, trust me bro (https://developers.google.com/identity/gsi/web/reference/js-reference#onGoogleLibraryLoad)
   window.onGoogleLibraryLoad = () => {
     google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       auto_select: true,
-      callback: config.credResponseHandler,
+      callback: loginWithGoogle,
       login_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URL,
       use_fedcm_for_prompt: true
     });
 
-    config.loaded = true;
+    loaded.value = true;
 
     if (options.prompt) {
       google.accounts.id.prompt();
@@ -44,7 +33,7 @@ export function install(app: any, options = defaultOptions) {
   };
 
   setTimeout(() => {
-    if (!config.loaded) {
+    if (!loaded.value) {
       console.error(
         "Google Library is still not loaded after 5 seconds, something is probably wrong. Did you add the cdn script?"
       );

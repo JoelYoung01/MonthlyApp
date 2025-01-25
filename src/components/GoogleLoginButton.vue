@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { inject, nextTick, useTemplateRef } from "vue";
-import { googleAccountsConfigKey } from "@/plugins/googleAuth";
-import { useSessionStore } from "@/stores/session";
+import { googleAccountsLoadedKey } from "@/plugins/googleAuth";
 
 type ViewType = "signin" | "signup" | "use";
 interface Props {
@@ -18,12 +17,7 @@ const viewToText: Record<ViewType, google.accounts.id.GsiButtonConfiguration["te
   use: "signin"
 };
 
-const sessionStore = useSessionStore();
-const googleAccountsConfig = inject(googleAccountsConfigKey, {
-  loaded: false,
-  credResponseHandler: () => {}
-});
-googleAccountsConfig.credResponseHandler = sessionStore.loginWithGoogle;
+const loaded = inject(googleAccountsLoadedKey, ref(false));
 const button = useTemplateRef("button");
 
 function render() {
@@ -41,7 +35,7 @@ function render() {
 }
 
 watch(
-  () => googleAccountsConfig.loaded,
+  () => loaded,
   (newValue) => {
     if (newValue) {
       nextTick(render);
