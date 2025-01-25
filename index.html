@@ -5,20 +5,11 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- For Google Login -->
-    <script src="https://accounts.google.com/gsi/client" async></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
     <title>%VITE_APP_TITLE%</title>
   </head>
-  <body>
-    <!-- For Google Login -->
-    <div
-      id="g_id_onload"
-      data-client_id="376512982554-0h2suddaplr0lomqg70lfqg3mgdctjv0.apps.googleusercontent.com"
-      data-context="signup"
-      data-ux_mode="popup"
-      data-login_uri="%GOOGLE_REDIRECT_URL%"
-      data-auto_prompt="false"
-    ></div>
 
+  <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

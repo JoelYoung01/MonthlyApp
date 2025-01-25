@@ -9,5 +9,5 @@ router = APIRouter(prefix="/auth", tags=["/Auth"])
     "/google-auth-receiver",
     tags=["AppSubmission"],
 )
-def google_login(credential, session: SessionDep):
+def google_login(body, session: SessionDep):
     pass

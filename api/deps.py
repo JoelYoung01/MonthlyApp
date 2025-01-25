@@ -4,12 +4,10 @@ from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlmodel import SQLModel, Session
 
-
-sqlite_file_name = "api/database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+from .core.config import settings
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+engine = create_engine(settings.SQLITE_DATABASE_URL, connect_args=connect_args)
 
 
 def get_session():
