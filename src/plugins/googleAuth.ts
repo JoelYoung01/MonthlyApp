@@ -6,31 +6,40 @@ function handleCredentialResponse(response: google.accounts.id.CredentialRespons
   console.debug(response);
 }
 
+const defaultOptions = {
+  prompt: true as boolean
+};
+
 /**
  * Docs for js API:
  * https://developers.google.com/identity/gsi/web/reference/js-reference
  */
-export function install(app: any) {
+export function install(app: any, options = defaultOptions) {
   const loaded = ref(false);
   app.provide(googleAccountsLoadedKey, loaded);
-  const checkGoogleAccounts = setInterval(() => {
-    if (typeof google !== "undefined" && google?.accounts?.id) {
-      clearInterval(checkGoogleAccounts);
 
-      google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        auto_select: true,
-        callback: handleCredentialResponse,
-        login_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URL,
-        use_fedcm_for_prompt: true
-      });
+  // @ts-expect-error This exists, trust me bro (https://developers.google.com/identity/gsi/web/reference/js-reference#onGoogleLibraryLoad)
+  window.onGoogleLibraryLoad = () => {
+    google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      auto_select: true,
+      callback: handleCredentialResponse,
+      login_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URL,
+      use_fedcm_for_prompt: true
+    });
 
-      loaded.value = true;
+    loaded.value = true;
+
+    if (options.prompt) {
+      google.accounts.id.prompt();
     }
-  }, 100);
+  };
 
   setTimeout(() => {
-    clearInterval(checkGoogleAccounts);
-    new Error("Timeout: google.accounts.id is not defined after 5 seconds.");
+    if (!loaded.value) {
+      console.error(
+        "Google Library is still not loaded after 5 seconds, something is probably wrong. Did you add the cdn script?"
+      );
+    }
   }, 5000);
 }

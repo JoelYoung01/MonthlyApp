@@ -2,6 +2,21 @@
 import { inject, nextTick, useTemplateRef } from "vue";
 import { googleAccountsLoadedKey } from "@/plugins/googleAuth";
 
+type ViewType = "signin" | "signup" | "use";
+interface Props {
+  view: ViewType;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  view: "signup"
+});
+
+const viewToText: Record<ViewType, google.accounts.id.GsiButtonConfiguration["text"]> = {
+  signin: "signin_with",
+  signup: "signup_with",
+  use: "signin"
+};
+
 const loaded = inject(googleAccountsLoadedKey, ref());
 const button = useTemplateRef("button");
 
@@ -14,7 +29,7 @@ function render() {
     type: "standard",
     theme: "outline",
     size: "large",
-    text: "signin_with",
+    text: viewToText[props.view],
     shape: "rectangular"
   });
 }

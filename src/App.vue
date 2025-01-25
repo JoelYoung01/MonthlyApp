@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from "vue-router";
-import GoogleLoginButton from "./components/GoogleLoginButton.vue";
+import AccountButton from "./components/AccountButton.vue";
 
 const route = useRoute();
 
@@ -29,13 +29,13 @@ const mainClassList = computed(() => {
       </v-btn>
 
       <v-btn variant="text" prepend-icon="mdi-home" to="/" class="mx-1"> Home </v-btn>
+
+      <AccountButton class="ms-3" />
     </v-app-bar>
 
     <v-main :class="mainClassList">
       <RouterView />
     </v-main>
-
-    <GoogleLoginButton />
   </v-app>
 </template>
 
