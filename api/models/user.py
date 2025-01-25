@@ -1,4 +1,3 @@
-from sqlalchemy import Column, ForeignKey
 from sqlmodel import Field, Relationship, SQLModel
 
 from api.models.permission import Permission
@@ -11,5 +10,6 @@ class User(SQLModel, table=True):
     display_name: str
     admin: bool = False
     disabled: bool = False
+    google_user_id: str | None = None
 
-    permissions: list["Permission"] = Relationship()
+    # permissions: list["Permission"] = Relationship()

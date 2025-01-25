@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useSessionStore } from "@/stores/session";
 import GoogleLoginButton from "./GoogleLoginButton.vue";
+
+const sessionStore = useSessionStore();
 
 const dialogVisible = ref(false);
 const view = ref<"signin" | "signup" | "account">("signin");
@@ -10,7 +13,7 @@ const title = computed(() => {
 });
 
 function logout() {
-  google.accounts.id.revoke("joeleyoung01@gmail.com");
+  //
 }
 </script>
 
@@ -36,6 +39,11 @@ function logout() {
             <v-btn color="primary" @click="logout">Sign Out</v-btn>
           </div>
         </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="sessionStore.checkSession()">Verify Session</v-btn>
+          <v-spacer />
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-btn>

@@ -1,5 +1,4 @@
-from sqlalchemy import Column, ForeignKey
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 class Permission(SQLModel, table=True):
