@@ -12,21 +12,22 @@ export class ApiError extends Error {
 }
 
 export async function doFetch(url: string, options?: RequestInit) {
-  const defaults: RequestInit = {};
-
   const access_token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const headers: HeadersInit = {};
   if (access_token) {
-    defaults.headers = {};
-    defaults.headers.Authorization = `Bearer ${access_token}`;
+    headers.Authorization = `Bearer ${access_token}`;
   }
 
   if (!url.includes("http")) {
-    url = `${import.meta.env.VITE_API_URL}${url}`;
+    url = `${import.meta.env.VITE_API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
   }
 
   const response = await fetch(url, {
-    ...defaults,
-    ...options
+    ...options,
+    headers: {
+      ...options?.headers,
+      ...headers
+    }
   });
 
   if (!response.ok) {
