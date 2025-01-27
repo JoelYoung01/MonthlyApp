@@ -9,7 +9,7 @@ from api.routes import (
     auth_routes,
     requirement_routes,
 )
-from api.deps import create_db_and_tables
+from api.core.database import create_db_and_tables
 
 
 app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")

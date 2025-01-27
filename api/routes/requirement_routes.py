@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import update
 from sqlmodel import select
 
-from api.deps import SessionDep
+from api.core.authentication import verify_access_token
+from api.core.database import SessionDep
 from api.models.requirement import (
     Requirement,
     RequirementCreateSchema,
@@ -10,7 +11,11 @@ from api.models.requirement import (
     RequirementUpdateSchema,
 )
 
-router = APIRouter(prefix="/requirement", tags=["Requirement"])
+router = APIRouter(
+    prefix="/requirement",
+    dependencies=[Depends(verify_access_token)],
+    tags=["Requirement"],
+)
 
 
 @router.post(

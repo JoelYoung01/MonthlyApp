@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import select
 
 
-from api.deps import SessionDep
+from api.core.database import SessionDep
 from api.models.authentication import Token, TokenType
 from api.models.user import User
 from api.core.config import settings
@@ -47,6 +47,14 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def get_admin_user(
+    current_active_user: Annotated[User, Depends(get_current_active_user)],
+):
+    if not current_active_user.admin:
+        raise HTTPException(status_code=403, detail="User is not admin")
+    return current_active_user
 
 
 def get_or_create_user_from_google_token(google_token, session: SessionDep):
@@ -99,7 +107,9 @@ def create_access_token(google_token, session: SessionDep):
     return db_token
 
 
-def verify_session_token(access_token, session: SessionDep) -> Token | None:
+def verify_access_token(
+    access_token: Annotated[str, Depends(oauth2_scheme)], session: SessionDep
+) -> Token:
     try:
         # Verify the session token
         jwt.decode(
@@ -110,9 +120,17 @@ def verify_session_token(access_token, session: SessionDep) -> Token | None:
         ).first()
         return db_token
     except jwt.ExpiredSignatureError:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials: Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except jwt.InvalidTokenError:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials: Token is invalid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 def verify_google_token(encoded_google_token: str):
@@ -124,3 +142,6 @@ def verify_google_token(encoded_google_token: str):
         encoded_google_token, request, settings.VITE_GOOGLE_CLIENT_ID
     )
     return decoded_token
+
+
+CurrentUserDep = Annotated[User, Depends(get_current_active_user)]

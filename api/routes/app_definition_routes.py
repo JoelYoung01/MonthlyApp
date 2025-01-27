@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import update
 from sqlmodel import select
 
-from api.deps import SessionDep
+from api.core.authentication import verify_access_token
+from api.core.database import SessionDep
 from api.models.app_definition import (
     AppDefinition,
     AppDefinitionCreateSchema,
@@ -13,7 +14,11 @@ from api.models.app_definition import (
     AppDefinitionUpdateSchema,
 )
 
-router = APIRouter(prefix="/app-definition", tags=["AppDefinition"])
+router = APIRouter(
+    prefix="/app-definition",
+    dependencies=[Depends(verify_access_token)],
+    tags=["AppDefinition"],
+)
 
 
 @router.get(

@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from api.core.authentication import (
     create_access_token,
     verify_google_token,
-    verify_session_token,
+    verify_access_token,
 )
-from api.deps import SessionDep
+from api.core.database import SessionDep
+from api.models.authentication import Token
 from api.schemas.authentication import GoogleLoginPayload, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -26,14 +28,7 @@ def login_with_google(payload: GoogleLoginPayload, session: SessionDep):
 
 
 @router.get("/verify-session/", tags=["Auth"], response_model=TokenResponse)
-def verify_session(access_token: str, session: SessionDep):
-    token = verify_session_token(access_token, session)
-
-    if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    return token
+def verify_session(
+    access_token: Annotated[Token, Depends(verify_access_token)],
+):
+    return access_token

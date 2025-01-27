@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AppDefinitionDashboard } from "@/types";
+import { post } from "@/utils";
 
 interface Props {
   modelValue: boolean;
@@ -33,12 +34,7 @@ async function onSubmit() {
       app_definition_id: props.definition.id
     };
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/app-submission/`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error(response.statusText);
+    await post(`/app-submission/`, payload);
     resetForm();
     emit("update:model-value", false);
     emit("submit");

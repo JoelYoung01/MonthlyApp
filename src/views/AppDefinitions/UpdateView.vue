@@ -2,6 +2,7 @@
 import { useRoute, useRouter } from "vue-router";
 import type { AppDefinition } from "@/types";
 import { onMounted } from "vue";
+import { ApiError, del, get, post, put } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -74,16 +75,14 @@ function fillForm() {
 
 async function loadAppDefinition() {
   try {
-    const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
-    const response = await fetch(url);
-    if (response.status === 404) router.push("/definition-not-found");
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-    detail.value = await response.json();
+    detail.value = await get(`/app-definition/${route.params.app_definition_id}/`);
     fillForm();
   } catch (er) {
-    console.error(er);
+    if ((er as ApiError).status === 404) {
+      router.push(`/definition-not-found`);
+    } else {
+      console.error(er);
+    }
   }
 }
 
@@ -92,53 +91,25 @@ async function save() {
     let appDefId = null;
 
     if (creating.value) {
-      const url = `${import.meta.env.VITE_API_URL}/app-definition/`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(form)
-      });
-      if (!response.ok) throw new Error("An error occurred while saving");
-      const data = await response.json();
+      const data = await post("/app-definition/", form);
       appDefId = data.id;
     } else {
-      const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(form)
-      });
-      if (!response.ok) throw new Error("An error occurred while saving");
-      const data = await response.json();
+      const data = await put(`/app-definition/${route.params.app_definition_id}/`, form);
       appDefId = data.id;
     }
 
     const createRequirements = requirementForms
       .filter((reqForm) => !reqForm.id)
-      .map((req) =>
-        fetch(`${import.meta.env.VITE_API_URL}/requirement/`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ...req, app_definition_id: appDefId })
-        })
-      );
+      .map((req) => post(`/requirement/`, { ...req, app_definition_id: appDefId }));
 
     const updateRequirements = requirementForms
       .filter((reqForm) => reqForm.id)
-      .map((req) =>
-        fetch(`${import.meta.env.VITE_API_URL}/requirement/${req.id}/`, {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(req)
-        })
-      );
+      .map((req) => put(`/requirement/${req.id}/`, req));
 
     const deleteRequirements =
       detail.value?.requirements
         .filter((reqDetail) => !requirementForms.some((reqForm) => reqForm.id === reqDetail.id))
-        .map((req) =>
-          fetch(`${import.meta.env.VITE_API_URL}/requirement/${req.id}/`, { method: "DELETE" })
-        ) ?? [];
+        .map((req) => del(`/requirement/${req.id}/`)) ?? [];
 
     await Promise.all([...createRequirements, ...updateRequirements, ...deleteRequirements]);
     router.push(`/app-definition/${appDefId}/detail`);

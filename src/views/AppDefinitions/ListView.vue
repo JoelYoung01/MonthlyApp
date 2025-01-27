@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { AppDefinitionStatus, type AppDefinitionDashboard } from "@/types";
-import { formatDate } from "@/utils";
+import { formatDate, get } from "@/utils";
 
 const appDefinitions = ref<AppDefinitionDashboard[]>([]);
 
 async function getAppDefinitions() {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/app-definition/`);
-  appDefinitions.value = await response.json();
+  appDefinitions.value = await get(`/app-definition/`);
 }
 function isActive(def: AppDefinitionDashboard) {
   return def.status === AppDefinitionStatus.Active;

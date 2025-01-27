@@ -2,6 +2,7 @@
 import AppDefinitionCard from "@/components/AppDefinitionCard.vue";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
 import type { AppDefinitionDashboard } from "@/types";
+import { get } from "@/utils";
 import { onMounted } from "vue";
 
 const appDefinitions = ref<AppDefinitionDashboard[]>();
@@ -19,11 +20,12 @@ function onSubmitClick(definition: AppDefinitionDashboard) {
 }
 
 async function getAppDefinitions() {
-  const result = await fetch(`${import.meta.env.VITE_API_URL}/app-definition/`);
-  appDefinitions.value = await result.json();
-
-  const activeResult = await fetch(`${import.meta.env.VITE_API_URL}/app-definition/active/`);
-  activeApps.value = await activeResult.json();
+  try {
+    appDefinitions.value = await get(`/app-definition/`);
+    activeApps.value = await get(`/app-definition/active/`);
+  } catch (er) {
+    console.error(er);
+  }
 }
 
 onMounted(() => {

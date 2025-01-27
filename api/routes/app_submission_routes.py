@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import update
 from sqlmodel import select
 
-from api.deps import SessionDep
+from api.core.authentication import verify_access_token
+from api.core.database import SessionDep
 from api.models.app_submission import (
     AppSubmission,
     AppSubmissionCreateSchema,
@@ -12,7 +13,11 @@ from api.models.app_submission import (
     AppSubmissionUpdateSchema,
 )
 
-router = APIRouter(prefix="/app-submission", tags=["AppSubmission"])
+router = APIRouter(
+    prefix="/app-submission",
+    dependencies=[Depends(verify_access_token)],
+    tags=["AppSubmission"],
+)
 
 
 @router.get(

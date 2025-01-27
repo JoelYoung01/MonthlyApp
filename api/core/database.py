@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlmodel import SQLModel, Session
 
-from .core.config import settings
+from api.core.config import settings
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(settings.SQLITE_DATABASE_URL, connect_args=connect_args)

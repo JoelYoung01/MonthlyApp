@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import type { AppDefinition } from "@/types";
-import { formatDate } from "@/utils";
+import { ApiError, del, formatDate, get } from "@/utils";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
 import { onMounted } from "vue";
 
@@ -13,30 +13,20 @@ const submitModalVisible = ref(false);
 
 async function loadAppDefinition() {
   try {
-    const url = `${import.meta.env.VITE_API_URL}/app-definition/${route.params.app_definition_id}/`;
-    const response = await fetch(url);
-
-    if (response.status === 404) {
-      router.push("/definition-not-found");
-    }
-
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-    detail.value = await response.json();
+    const url = `/app-definition/${route.params.app_definition_id}/`;
+    detail.value = await get(url);
   } catch (er) {
-    console.error(er);
+    if ((er as ApiError).status === 404) {
+      router.push("/definition-not-found");
+    } else {
+      console.error(er);
+    }
   }
 }
 
 async function deleteSubmission(submissionId: number | string) {
   try {
-    const url = `${import.meta.env.VITE_API_URL}/app-submission/${submissionId}/`;
-    const options = {
-      method: "DELETE"
-    };
-    const response = await fetch(url, options);
-    if (!response.ok) throw new Error(response.statusText);
+    await del(`/app-submission/${submissionId}/`);
     await loadAppDefinition();
   } catch (er) {
     console.error(er);
