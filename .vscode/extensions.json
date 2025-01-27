@@ -8,5 +8,7 @@
     "christian-kohler.npm-intellisense",
     "christian-kohler.path-intellisense",
     "vue.volar",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-sqlite"
   ]
 }

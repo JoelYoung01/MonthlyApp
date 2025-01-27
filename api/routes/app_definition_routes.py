@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import update
 from sqlmodel import select
 
-from api.core.authentication import verify_access_token
+from api.core.authentication import CurrentUserDep, get_admin_user, verify_access_token
 from api.core.database import SessionDep
 from api.models.app_definition import (
     AppDefinition,
@@ -69,6 +69,7 @@ def get_app_definition_by_id(
 @router.post(
     "/",
     response_model=AppDefinitionDetailSchema,
+    dependencies=[Depends(get_admin_user)],
 )
 def create_app_definition(app_def: AppDefinitionCreateSchema, session: SessionDep):
     db_app_dev = AppDefinition.model_validate(app_def)
@@ -81,6 +82,7 @@ def create_app_definition(app_def: AppDefinitionCreateSchema, session: SessionDe
 @router.put(
     "/{app_def_id}/",
     response_model=AppDefinitionDetailSchema,
+    dependencies=[Depends(get_admin_user)],
 )
 def update_app_definition(
     app_def_id: int, app_def: AppDefinitionUpdateSchema, session: SessionDep
@@ -105,7 +107,7 @@ def update_app_definition(
         )
 
 
-@router.delete("/{app_def_id}/")
+@router.delete("/{app_def_id}/", dependencies=[Depends(get_admin_user)])
 def delete_app_definition(app_def_id: int, session: SessionDep):
     existing_app_def = session.exec(
         select(AppDefinition).where(AppDefinition.id == app_def_id)
