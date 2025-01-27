@@ -15,7 +15,7 @@ from api.deps import create_db_and_tables
 app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
 
 # Add CORS middleware for development environment
-if os.getenv("ENV", "development") == "development":
+if os.getenv("ENVIRONMENT", "development") == "development":
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[settings.FRONTEND_HOST],  # Default Vite dev server port
