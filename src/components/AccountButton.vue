@@ -17,14 +17,26 @@ function logout() {
 
 <template>
   <v-btn variant="text" icon>
-    <v-icon icon="mdi-account" />
+    <v-avatar>
+      <v-img alt="Profile Image" :src="sessionStore.currentUser?.avatar_url">
+        <template #placeholder>
+          <v-icon class="text-white h-100" icon="mdi-account" size="large" />
+        </template>
+      </v-img>
+    </v-avatar>
 
     <v-dialog v-model="dialogVisible" activator="parent" max-width="300">
       <v-card>
         <v-card-title class="text-center">{{ title }}</v-card-title>
         <v-card-text v-if="sessionStore.currentUser">
           <div class="d-flex flex-column align-center">
-            <v-avatar :image="sessionStore.currentUser.avatar_url" size="75" class="mb-2" />
+            <v-avatar size="75" class="mb-2">
+              <v-img alt="Profile Image" :src="sessionStore.currentUser.avatar_url">
+                <template #placeholder>
+                  <v-icon icon="mdi-account-circle" size="75" />
+                </template>
+              </v-img>
+            </v-avatar>
             {{ sessionStore.currentUser.display_name }}
             <v-btn color="primary" class="mt-4" @click="logout">Sign Out</v-btn>
           </div>
