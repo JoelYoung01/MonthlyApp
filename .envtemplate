@@ -7,7 +7,8 @@ VITE_APP_TITLE=Monthly App
 VITE_API_URL=http://localhost:8000/api
 
 # Deployment Environment
-ENV=development
+ENVIRONMENT=development
 
 # Redirect Urls
-GOOGLE_REDIRECT_URL=http://localhost:8000/api/auth/google-auth-receiver
+VITE_GOOGLE_REDIRECT_URL=http://localhost:8000/api/auth/google-auth-receiver
+VITE_GOOGLE_CLIENT_ID=376512982554-0h2suddaplr0lomqg70lfqg3mgdctjv0.apps.googleusercontent.com
