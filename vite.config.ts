@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import vueDevTools from "vite-plugin-vue-devtools";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import AutoImport from "unplugin-auto-import/vite";
 
@@ -12,7 +11,6 @@ export default defineConfig({
     vue({
       template: { transformAssetUrls }
     }),
-    vueDevTools(),
     vuetify(),
     AutoImport({
       // https://github.com/unplugin/unplugin-auto-import?tab=readme-ov-file#configuration
