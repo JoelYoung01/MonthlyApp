@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
-import type { AppDefinition } from "@/types";
+import type { AppSubmission, AppDefinition } from "@/types";
 import { ApiError, del, formatDate, get } from "@/utils";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
 import { onMounted } from "vue";
+import { useSessionStore } from "@/stores/session";
 
 const route = useRoute();
 const router = useRouter();
+const sessionStore = useSessionStore();
 
 const detail = ref<AppDefinition>();
+const submissions = ref<AppSubmission[]>();
 const submitModalVisible = ref(false);
 
 async function loadAppDefinition() {
@@ -24,10 +27,19 @@ async function loadAppDefinition() {
   }
 }
 
+async function loadSubmissions() {
+  try {
+    const url = `/app-submission/${route.params.app_definition_id}/`;
+    submissions.value = await get(url);
+  } catch (er) {
+    console.error(er);
+  }
+}
+
 async function deleteSubmission(submissionId: number | string) {
   try {
     await del(`/app-submission/${submissionId}/`);
-    await loadAppDefinition();
+    await loadSubmissions();
   } catch (er) {
     console.error(er);
   }
@@ -35,6 +47,7 @@ async function deleteSubmission(submissionId: number | string) {
 
 onMounted(() => {
   loadAppDefinition();
+  loadSubmissions();
 });
 </script>
 
@@ -46,6 +59,7 @@ onMounted(() => {
       <v-spacer />
 
       <v-btn
+        v-if="sessionStore.currentUser?.admin"
         prepend-icon="mdi-pencil"
         color="primary"
         :to="`/app-definition/${route.params.app_definition_id}/update`"
@@ -94,7 +108,7 @@ onMounted(() => {
       </v-table>
     </v-card>
 
-    <v-card v-if="detail?.submissions.length" class="pa-3">
+    <v-card v-if="submissions?.length" class="pa-3">
       <h3>Your Submissions</h3>
       <v-table>
         <thead>
@@ -105,7 +119,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="submission in detail?.submissions ?? []" :key="submission.id">
+          <tr v-for="submission in submissions" :key="submission.id">
             <td>
               <a :href="submission.link ?? '/bad-link'" target="_blank">{{ submission.link }}</a>
             </td>
@@ -127,7 +141,7 @@ onMounted(() => {
   <AppSubmissionModal
     v-model="submitModalVisible"
     :definition="detail"
-    @submit="loadAppDefinition()"
+    @submit="loadSubmissions()"
   />
 </template>
 

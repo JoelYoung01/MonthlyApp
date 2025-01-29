@@ -19,22 +19,39 @@ router = APIRouter(
 
 
 @router.get(
+    "/",
+    tags=["AppSubmission"],
+    response_model=list[AppSubmissionDetailSchema],
+)
+def get_all_users_app_submissions(session: SessionDep, current_user: CurrentUserDep):
+    submissions = session.exec(
+        select(AppSubmission).where(
+            AppSubmission.created_by == current_user.id,
+        )
+    )
+    return submissions
+
+
+@router.get(
     "/{app_id}/",
     tags=["AppSubmission"],
-    response_model=AppSubmissionDetailSchema,
+    response_model=list[AppSubmissionDetailSchema],
 )
-def get_app_submission_by_id(
-    app_id: int,
-    session: SessionDep,
+def get_app_submission_by_app_id(
+    app_id: int, session: SessionDep, current_user: CurrentUserDep
 ):
-    app_def = session.exec(
-        select(AppSubmission).where(AppSubmission.id == app_id)
-    ).first()
-    if not app_def:
-        raise HTTPException(
-            status_code=404, detail=f"App Submission with id {app_id} not found."
+    submissions = session.exec(
+        select(AppSubmission).where(
+            AppSubmission.app_definition_id == app_id,
+            AppSubmission.created_by == current_user.id,
         )
-    return app_def
+    )
+    if not submissions:
+        raise HTTPException(
+            status_code=404,
+            detail=f"App Submissions for app with id {app_id} not found.",
+        )
+    return submissions
 
 
 @router.post(
@@ -43,31 +60,31 @@ def get_app_submission_by_id(
     response_model=AppSubmissionDetailSchema,
 )
 def create_app_submission(
-    app_def: AppSubmissionCreateSchema,
+    submission: AppSubmissionCreateSchema,
     current_user: CurrentUserDep,
     session: SessionDep,
 ):
-    new_def = app_def.model_dump()
-    new_def["created_on"] = datetime.now(timezone.utc).isoformat()
-    new_def["created_by"] = current_user.id
+    new_submission = submission.model_dump()
+    new_submission["created_on"] = datetime.now(timezone.utc).isoformat()
+    new_submission["created_by"] = current_user.id
 
-    db_app_def = AppSubmission.model_validate(new_def)
+    db_submission = AppSubmission.model_validate(new_submission)
 
-    session.add(db_app_def)
+    session.add(db_submission)
     session.commit()
-    session.refresh(db_app_def)
-    return db_app_def
+    session.refresh(db_submission)
+    return db_submission
 
 
-@router.delete("/{app_def_id}/", tags=["AppSubmission"])
-def delete_app_submission(app_def_id: int, session: SessionDep):
-    existing_app_def = session.exec(
-        select(AppSubmission).where(AppSubmission.id == app_def_id)
+@router.delete("/{submission_id}/", tags=["AppSubmission"])
+def delete_app_submission(submission_id: int, session: SessionDep):
+    existing_submission = session.exec(
+        select(AppSubmission).where(AppSubmission.id == submission_id)
     ).first()
-    if existing_app_def:
-        session.delete(existing_app_def)
+    if existing_submission:
+        session.delete(existing_submission)
         session.commit()
     else:
         raise HTTPException(
-            status_code=404, detail=f"App Submission with id {app_def_id} not found."
+            status_code=404, detail=f"App Submission with id {submission_id} not found."
         )

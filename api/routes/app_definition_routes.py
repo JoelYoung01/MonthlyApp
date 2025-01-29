@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import update
 from sqlmodel import select
 
-from api.core.authentication import CurrentUserDep, get_admin_user, verify_access_token
+from api.core.authentication import get_admin_user, verify_access_token
 from api.core.database import SessionDep
 from api.models.app_definition import (
     AppDefinition,

@@ -3,7 +3,14 @@ export type AppSubmission = {
   status: number;
   created_by: number;
   created_on: string;
-  submitted_by: number;
-  submitted_on: string;
+  link: string | null;
+};
+
+export type AppSubmissionDetail = {
+  id: number;
+  status: number;
+  created_by: number;
+  created_on: string;
+  app_definition_id: number;
   link: string | null;
 };

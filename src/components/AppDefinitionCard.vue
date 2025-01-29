@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { AppDefinitionStatus, type AppDefinitionDashboard } from "@/types";
+import { AppDefinitionStatus, type AppDefinitionDashboard, type AppSubmission } from "@/types";
 import { formatDate } from "@/utils";
 
 interface Props {
   definition?: AppDefinitionDashboard;
+  submissions?: AppSubmission[];
 }
 
 const props = defineProps<Props>();
@@ -25,6 +26,15 @@ const daysRemaining = computed(() => {
   const days = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Convert milliseconds to days
   return `${days} days remaining`;
 });
+const latestSubmission = computed(() => {
+  if (!props.submissions?.length) {
+    return null;
+  }
+
+  return props.submissions.toSorted(
+    (a, b) => new Date(b.created_on).getTime() - new Date(a.created_on).getTime()
+  )[0];
+});
 </script>
 
 <template>
@@ -41,8 +51,19 @@ const daysRemaining = computed(() => {
     <v-card-text>
       {{ definition?.description }}
     </v-card-text>
-    <v-card-actions v-if="isActive" class="flex-row-reverse">
-      <v-btn color="success" @click.stop="emit('addSubmit')">Add Submission</v-btn>
+    <v-card-actions>
+      <v-btn
+        v-if="latestSubmission"
+        variant="flat"
+        color="primary"
+        :href="latestSubmission.link ?? ''"
+        target="_blank"
+        @click.stop
+      >
+        Open Submission
+      </v-btn>
+      <v-spacer />
+      <v-btn v-if="isActive" color="success" @click.stop="emit('addSubmit')">Add Submission</v-btn>
     </v-card-actions>
   </v-card>
 </template>

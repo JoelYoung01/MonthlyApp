@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
 import NotFound from "@/views/NotFound.vue";
-import AuthReceiver from "@/views/AuthReceiver.vue";
+import LoginView from "@/views/LoginView.vue";
+import { useSessionStore } from "@/stores/session";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,14 +10,17 @@ const router = createRouter({
     {
       path: "/",
       name: "Home",
-      component: HomeView
+      component: HomeView,
+      meta: {
+        noAuthReq: true
+      }
     },
     {
-      path: "/google-auth-receiver",
-      name: "GoogleAuthReceiver",
-      component: AuthReceiver,
+      path: "/login",
+      name: "Login",
+      component: LoginView,
       meta: {
-        authType: "Google"
+        noAuthReq: true
       }
     },
     {
@@ -64,6 +68,15 @@ const router = createRouter({
       component: NotFound
     }
   ]
+});
+
+// Verify user is logged in before routing
+router.beforeEach((to) => {
+  const sessionStore = useSessionStore();
+
+  if (!sessionStore.currentUser && !to.meta.noAuthReq) {
+    return `/login?redirectUrl=${to.fullPath}`;
+  }
 });
 
 export default router;

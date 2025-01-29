@@ -12,6 +12,7 @@ const title = computed(() => {
 
 function logout() {
   sessionStore.logout();
+  window.location.reload();
 }
 </script>
 

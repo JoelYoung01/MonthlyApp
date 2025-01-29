@@ -17,6 +17,7 @@ class AppSubmissionDetailSchema(SQLModel):
     status: int
     created_by: int
     created_on: str
+    app_definition_id: int
     link: str | None
 
 

@@ -27,6 +27,7 @@ export const useSessionStore = defineStore("session", () => {
     access_token.value = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (access_token.value === null) {
       logout();
+      loading.value = false;
       return;
     }
 
@@ -66,5 +67,5 @@ export const useSessionStore = defineStore("session", () => {
   );
 
   checkSession();
-  return { currentUser, checkSession, logout };
+  return { currentUser, loading, checkSession, logout };
 });

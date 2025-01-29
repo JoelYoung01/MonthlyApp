@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import type { AppDefinitionDashboard, AppSubmissionDetail } from "@/types";
+import { get } from "@/utils";
+import { useSessionStore } from "@/stores/session";
 import AppDefinitionCard from "@/components/AppDefinitionCard.vue";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
-import type { AppDefinitionDashboard } from "@/types";
-import { get } from "@/utils";
-import { onMounted } from "vue";
+
+const sessionStore = useSessionStore();
 
 const appDefinitions = ref<AppDefinitionDashboard[]>();
+const submissions = ref<AppSubmissionDetail[]>([]);
 const activeApps = ref<AppDefinitionDashboard[]>();
 const submitCardVisible = ref(false);
 const submitDefinition = ref<AppDefinitionDashboard>();
@@ -19,6 +22,10 @@ function onSubmitClick(definition: AppDefinitionDashboard) {
   submitCardVisible.value = true;
 }
 
+function appSubmissions(appId: number) {
+  return submissions.value.filter((s) => s.app_definition_id === appId);
+}
+
 async function getAppDefinitions() {
   try {
     appDefinitions.value = await get(`/app-definition/`);
@@ -28,9 +35,24 @@ async function getAppDefinitions() {
   }
 }
 
-onMounted(() => {
-  getAppDefinitions();
-});
+async function getSubmissions() {
+  try {
+    submissions.value = await get("/app-submission/");
+  } catch (er) {
+    console.error(er);
+  }
+}
+
+watch(
+  () => sessionStore.currentUser,
+  (value) => {
+    if (value) {
+      getAppDefinitions();
+      getSubmissions();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -42,7 +64,7 @@ onMounted(() => {
         <v-col v-for="definition in activeApps" :key="definition.id" cols="4">
           <AppDefinitionCard
             :definition="definition"
-            include-actions
+            :submissions="appSubmissions(definition.id)"
             @add-submit="onSubmitClick(definition)"
           />
         </v-col>
@@ -56,14 +78,18 @@ onMounted(() => {
         <v-col v-for="definition in completeApps" :key="definition.id" cols="4">
           <AppDefinitionCard
             :definition="definition"
-            include-actions
+            :submissions="appSubmissions(definition.id)"
             @add-submit="onSubmitClick(definition)"
           />
         </v-col>
       </v-row>
     </section>
 
-    <AppSubmissionModal v-model="submitCardVisible" :definition="submitDefinition" />
+    <AppSubmissionModal
+      v-model="submitCardVisible"
+      :definition="submitDefinition"
+      @submit="getSubmissions()"
+    />
   </v-container>
 </template>
 

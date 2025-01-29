@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useSessionStore } from "@/stores/session";
 import { AppDefinitionStatus, type AppDefinitionDashboard } from "@/types";
 import { formatDate, get } from "@/utils";
+
+const sessionStore = useSessionStore();
 
 const appDefinitions = ref<AppDefinitionDashboard[]>([]);
 
@@ -21,7 +24,13 @@ getAppDefinitions();
 
       <v-spacer />
 
-      <v-btn color="primary" prepend-icon="mdi-plus" to="/app-definition/create">Create New</v-btn>
+      <v-btn
+        v-if="sessionStore.currentUser?.admin"
+        color="primary"
+        prepend-icon="mdi-plus"
+        to="/app-definition/create"
+        >Create New</v-btn
+      >
     </div>
     <v-row>
       <v-col v-for="definition in appDefinitions" :key="definition.id" cols="3">

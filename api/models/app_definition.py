@@ -5,7 +5,7 @@ from pydantic import computed_field
 from sqlmodel import Field, Relationship, SQLModel
 
 from api.models.requirement import Requirement, RequirementDetailSchema
-from api.models.app_submission import AppSubmission, AppSubmissionDetailSchema
+from api.models.app_submission import AppSubmission
 
 
 class AppDefinitionStatus(Enum):
@@ -60,7 +60,6 @@ class AppDefinitionDetailSchema(SQLModel):
     due_date: datetime
     description: str
     requirements: list[RequirementDetailSchema]
-    submissions: list[AppSubmissionDetailSchema]
 
 
 class AppDefinitionCreateSchema(SQLModel):
