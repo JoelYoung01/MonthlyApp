@@ -4,6 +4,12 @@ run-name: Pipeline started by ${{ github.actor }}
 on:
   workflow_call:
     inputs:
+      ghcr_namespace:
+        description: "The namespace to push the image to"
+        required: false
+        type: string
+        default: joelyoung01
+
       image_name:
         description: "The name of the Docker image to deploy"
         required: true
@@ -75,4 +81,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ inputs.image_name }}:latest
+            ghcr.io/${{ inputs.ghcr_namespace }}/${{ inputs.image_name }}:latest
