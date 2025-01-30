@@ -9,4 +9,4 @@ jobs:
   BuildApp:
     uses: ./.github/workflows/BuildApp.yml
     with:
-      image_name: MonthlyApp
+      image_name: monthly-app
