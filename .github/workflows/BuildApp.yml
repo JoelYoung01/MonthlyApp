@@ -31,7 +31,6 @@ jobs:
 
       - name: Build Vue App
         env:
-          NODE_ENV: production
           VITE_APP_TITLE: ${{ vars.APP_TITLE }}
           VITE_API_URL: ${{ vars.API_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
