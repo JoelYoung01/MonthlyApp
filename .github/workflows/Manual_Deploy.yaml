@@ -3,22 +3,14 @@ run-name: Manual Deployment started by ${{ github.actor }}
 
 on:
   workflow_dispatch:
-      inputs: 
-        environment:
-          description: 'Environment to deploy'
-          type: choice
-          options: ['dev', 'stage', 'production']
-          required: true
-          default: 'stage'
+    inputs:
+      image_name:
+        description: "Name Of Image"
+        required: false
+        default: "MonthlyApp"
 
 jobs:
-  Deploy_to_environment:
-    uses: JoelYoung01/Templates/.github/workflows/DeployStaticS3Sitel.yaml@v0.1.1
+  BuildApp:
+    uses: ./.github/workflows/BuildApp.yml
     with:
-      environment: ${{ github.event.inputs.environment }}
-      app_name: ${{ vars.APP_NAME }}
-      app_title: ${{ vars.APP_TITLE }}
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      image_name: ${{ inputs.image_name }}

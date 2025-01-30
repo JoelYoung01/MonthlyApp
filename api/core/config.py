@@ -1,4 +1,3 @@
-import os
 import secrets
 import warnings
 from typing import Annotated, Any, Literal
@@ -36,6 +35,7 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     VITE_GOOGLE_CLIENT_ID: str
+    VUE_STATIC_DIR: str = "dist"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # POSTGRES_USER: str
     # POSTGRES_PASSWORD: str = ""
     # POSTGRES_DB: str = ""
-    SQLITE_FILE_NAME: str = os.getenv("SQLITE_FILE_NAME", "api/database.db")
+    SQLITE_FILE_NAME: str = "api/data/database.db"
 
     @computed_field  # type: ignore[prop-decorator]
     @property

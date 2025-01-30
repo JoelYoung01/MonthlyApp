@@ -10,7 +10,10 @@
       "label": "copy .env",
       "type": "shell",
       "command": "cmd",
-      "args": ["/c", "if not exist backend\\.env (copy backend\\.env.template backend\\.env)"],
+      "args": [
+        "/c",
+        "if not exist backend\\.env (copy backend\\.env.template backend\\.env)"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -19,7 +22,6 @@
       },
       "problemMatcher": []
     },
-
     // ================================
     //            Dev Tasks
     // ================================
@@ -27,7 +29,9 @@
       "label": "pnpm: dev",
       "type": "shell",
       "command": "pnpm",
-      "args": ["dev"],
+      "args": [
+        "dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -40,7 +44,10 @@
       "label": "fastapi: dev",
       "type": "shell",
       "command": "venv/Scripts/fastapi.exe",
-      "args": ["dev", "api/main.py"],
+      "args": [
+        "dev",
+        "api/main.py"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -49,10 +56,12 @@
       },
       "problemMatcher": []
     },
-
     {
       "label": "Run Local Dev",
-      "dependsOn": ["pnpm: dev", "fastapi: dev"],
+      "dependsOn": [
+        "pnpm: dev",
+        "fastapi: dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -60,6 +69,66 @@
         "group": "Dev"
       },
       "problemMatcher": []
-    }
+    },
+    // ================================
+    //            Build Tasks
+    // ================================
+    {
+      "label": "pnpm: build",
+      "type": "shell",
+      "command": "pnpm",
+      "args": [
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "group": "Build"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: build",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "build",
+        "--pull",
+        "--rm",
+        "-f",
+        "'Dockerfile'",
+        "-t",
+        "'monthlyapp:latest'",
+        "'.'"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "group": "Build"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: run",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-d",
+        "-p",
+        "8000:8000/tcp",
+        "'monthlyapp:latest'",
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "group": "Build"
+      },
+      "problemMatcher": []
+    },
   ]
 }

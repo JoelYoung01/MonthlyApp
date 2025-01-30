@@ -21,7 +21,6 @@ export function install(app: any, options = defaultOptions) {
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       auto_select: true,
       callback: loginWithGoogle,
-      login_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URL,
       use_fedcm_for_prompt: true
     });
 

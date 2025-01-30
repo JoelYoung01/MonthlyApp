@@ -10,7 +10,6 @@ VITE_API_URL=http://localhost:8000/api
 ENVIRONMENT=development
 
 # Redirect Urls
-VITE_GOOGLE_REDIRECT_URL=http://localhost:8000/api/auth/google-auth-receiver
 VITE_GOOGLE_CLIENT_ID=
 
 # App's Backend Secret
