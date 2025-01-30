@@ -15,7 +15,7 @@ const MainTheme: ThemeDefinition = {
   }
 };
 
-const vuetify = createVuetify({
+export const vuetify = createVuetify({
   theme: {
     defaultTheme: "MainTheme",
     themes: {
@@ -23,5 +23,3 @@ const vuetify = createVuetify({
     }
   }
 });
-
-export default vuetify;

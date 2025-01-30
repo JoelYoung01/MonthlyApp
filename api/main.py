@@ -1,45 +1,30 @@
-from datetime import datetime
-from typing import Annotated
-
-from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlalchemy import Column, DateTime, ForeignKey, String, Text, update
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 
-class AppDefinition(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str
-    start_date: datetime
-    due_date: datetime
-    description: str
+from api.core.config import settings
+from api.routes import (
+    app_definition_routes,
+    app_submission_routes,
+    auth_routes,
+    requirement_routes,
+)
+from api.core.database import create_db_and_tables
 
 
-class Requirement(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str
-    description: str
-    related_app_id: int = Field(sa_column=Column(ForeignKey("app_definition.id")))
+app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
 
-
-sqlite_file_name = "api/database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
-
-app = FastAPI()
+# Add CORS middleware for development environment
+if settings.ENVIRONMENT == "development":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[settings.FRONTEND_HOST],  # Default Vite dev server port
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.on_event("startup")
@@ -47,68 +32,23 @@ def on_startup():
     create_db_and_tables()
 
 
-@app.get("/requirements/", tags=["Requirements"])
-def get_all_requirements(
-    session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100
-) -> list[Requirement]:
-    reqs = session.exec(select(Requirement).offset(offset).limit(limit)).all()
-    return reqs
+api_router = APIRouter()
+api_router.include_router(app_definition_routes.router)
+api_router.include_router(requirement_routes.router)
+api_router.include_router(app_submission_routes.router)
+api_router.include_router(auth_routes.router)
 
 
-@app.get("/requirements/{req_id}/", tags=["Requirements"])
-def get_requirement_by_id(
-    req_id: int,
-    session: SessionDep,
-) -> Requirement:
-    req = session.exec(select(Requirement).where(Requirement.id == req_id))
-    if not req:
-        raise HTTPException(
-            status_code=404, detail=f"Requirement with id {req_id} not found."
-        )
-    return req
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.post("/requirements/", tags=["Requirements"])
-def create_requirement(requirement: Requirement, session: SessionDep) -> Requirement:
-    session.add(requirement)
-    session.commit()
-    session.refresh(requirement)
-    return requirement
+# Add the static frontend files if not in development
+if settings.ENVIRONMENT != "development":
+    app.mount(
+        "/", StaticFiles(directory=settings.VUE_STATIC_DIR, html=True), name="frontend"
+    )
 
-
-@app.put("/requirements/{req_id}/", tags=["Requirements"])
-def update_requirement(
-    req_id: int, requirement: Requirement, session: SessionDep
-) -> Requirement:
-    existing_requirement = session.exec(
-        select(Requirement).where(Requirement.id == req_id)
-    ).first()
-    if existing_requirement:
-        update_stmt = (
-            update(Requirement)
-            .where(Requirement.id == req_id)
-            .values(**requirement.dict())
-            .execution_options(synchronize_session="fetch")
-        )
-        session.exec(update_stmt)
-        session.commit()
-        session.refresh(existing_requirement)
-        return existing_requirement
-    else:
-        raise HTTPException(
-            status_code=404, detail=f"Requirement with id {req_id} not found."
-        )
-
-
-@app.delete("/requirements/{req_id}/", tags=["Requirements"])
-def delete_requirement(req_id: int, session: SessionDep) -> None:
-    existing_requirement = session.exec(
-        select(Requirement).where(Requirement.id == req_id)
-    ).first()
-    if existing_requirement:
-        session.delete(existing_requirement)
-        session.commit()
-    else:
-        raise HTTPException(
-            status_code=404, detail=f"Requirement with id {req_id} not found."
-        )
+    # Add catch-all route for handling 404s
+    @app.exception_handler(404)
+    async def custom_404_handler(request, __):
+        return FileResponse(f"{settings.VUE_STATIC_DIR}/index.html")

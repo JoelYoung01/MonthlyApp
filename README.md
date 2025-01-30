@@ -34,12 +34,32 @@ git push -u origin main
 
 Copy `.envtemplate` to a new file, `.env`, and fill out applicable values
 
+Setup the backend by creating a venv.
+
+```bash
+# Add venv
+py -m venv venv
+```
+
+When using VSCode, you should have the option to set this venv as your default python interpreter. If the option did not pop up, you can set this opening the cmd palette `Ctrl` + `Shift` + `P` and typing `Python: Select Interpreter` or something similar.
+
+> When setting your venv python as your default interpreter, you will have to reload VSCode before your terminals switch to using that python instance.
+
+Once your venv is active, `echo $env:VIRTUAL_ENV` should return your venv's path.
+
 ### Step 3 - Install Dependencies
 
 Install dependencies
 
 ```bash
+# Install Vite Deps
 pnpm i
+
+# Activate venv (only if not already active)
+./venv/Scripts/activate
+
+# Install Python dependencies
+pip install -r requirements.txt
 ```
 
 ### Run / Build / Deploy
@@ -47,7 +67,11 @@ pnpm i
 #### Compile and Hot-Reload for Development
 
 ```bash
+# Run Vite Dev Server
 pnpm dev
+
+# Run FastAPI Dev Server
+fastapi dev api/main.py
 ```
 
 #### Type-Check, Compile and Minify for Production
