@@ -82,3 +82,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ inputs.ghcr_namespace }}/${{ inputs.image_name }}:latest
+
+permissions:
+  contents: read
+  packages: write
