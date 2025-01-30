@@ -3,10 +3,10 @@ import { inject, nextTick, useTemplateRef } from "vue";
 import { googleAccountsLoadedKey } from "@/plugins/googleAuth";
 
 const loaded = inject(googleAccountsLoadedKey, ref(false));
-const button = useTemplateRef("button");
+const button = useTemplateRef<HTMLDivElement>("button");
 
 function render() {
-  if (button.value === null) {
+  if (!button.value) {
     throw new Error("No button found when attempting to render google login button.");
   }
 
