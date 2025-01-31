@@ -14,3 +14,5 @@ jobs:
     uses: ./.github/workflows/BuildApp.yml
     with:
       image_name: ${{ inputs.image_name }}
+    secrets:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

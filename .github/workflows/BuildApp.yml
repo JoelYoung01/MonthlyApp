@@ -15,6 +15,11 @@ on:
         required: true
         type: string
 
+    secrets:
+      GOOGLE_CLIENT_ID:
+        description: "Google client ID of app"
+        required: true
+
 permissions:
   packages: write
 

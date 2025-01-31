@@ -10,3 +10,5 @@ jobs:
     uses: ./.github/workflows/BuildApp.yml
     with:
       image_name: monthly-app
+    secrets:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
