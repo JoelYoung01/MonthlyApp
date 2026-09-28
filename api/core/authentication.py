@@ -139,7 +139,7 @@ def verify_google_token(encoded_google_token: str):
 
     request = google_req.Request()
     decoded_token = id_token.verify_oauth2_token(
-        encoded_google_token, request, settings.VITE_GOOGLE_CLIENT_ID
+        encoded_google_token, request, settings.GOOGLE_CLIENT_ID
     )
     return decoded_token
 

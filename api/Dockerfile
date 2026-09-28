@@ -1,20 +1,25 @@
 FROM python:3.12-slim
 
+COPY --from=ghcr.io/astral-sh/uv:0.12.19 /uv /uvx /bin/
+
 WORKDIR /app
 
-# Setup system deps
-RUN apt-get update && apt-get install -y \
-  build-essential \
-  && rm -rf /var/lib/apt/lists/*
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app"
 
-# Setup python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
 
-COPY dist ./dist
-COPY api ./api
+# The build context is this directory, which is also the `api` Python package.
+COPY __init__.py main.py /app/api/
+COPY core /app/api/core
+COPY models /app/api/models
+COPY routes /app/api/routes
+COPY schemas /app/api/schemas
+COPY dist /app/dist
 
-# Wire up db location
 RUN mkdir -p /app/api/data
 VOLUME /app/api/data
 

@@ -1,10 +1,12 @@
 {
+    "python.defaultInterpreterPath": "${workspaceFolder}/api/.venv/bin/python",
+    "eslint.workingDirectories": ["web"],
     "sqltools.connections": [
         {
             "previewLimit": 50,
             "driver": "SQLite",
             "name": "LocalSqlite",
-            "database": "${workspaceFolder:MonthlyApp}/api/database.db"
+            "database": "${workspaceFolder}/api/data/database.db"
         }
     ]
 }

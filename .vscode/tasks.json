@@ -9,10 +9,10 @@
     {
       "label": "copy .env",
       "type": "shell",
-      "command": "cmd",
+      "command": "bash",
       "args": [
-        "/c",
-        "if not exist backend\\.env (copy backend\\.env.template backend\\.env)"
+        "-lc",
+        "test -f web/.env || cp web/.envtemplate web/.env; test -f api/.env || cp api/.envtemplate api/.env"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -33,7 +33,7 @@
         "dev"
       ],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/web"
       },
       "presentation": {
         "group": "Dev"
@@ -43,8 +43,12 @@
     {
       "label": "fastapi: dev",
       "type": "shell",
-      "command": "venv/Scripts/fastapi.exe",
+      "command": "uv",
       "args": [
+        "run",
+        "--project",
+        "api",
+        "fastapi",
         "dev",
         "api/main.py"
       ],
@@ -81,8 +85,27 @@
         "build"
       ],
       "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "presentation": {
+        "group": "Build"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "stage web dist",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "rm -rf api/dist && mkdir -p api/dist && cp -a web/dist/. api/dist/"
+      ],
+      "options": {
         "cwd": "${workspaceFolder}"
       },
+      "dependsOn": [
+        "pnpm: build"
+      ],
       "presentation": {
         "group": "Build"
       },
@@ -97,14 +120,17 @@
         "--pull",
         "--rm",
         "-f",
-        "'Dockerfile'",
+        "Dockerfile",
         "-t",
-        "'monthlyapp:latest'",
-        "'.'"
+        "monthlyapp:latest",
+        "."
       ],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/api"
       },
+      "dependsOn": [
+        "stage web dist"
+      ],
       "presentation": {
         "group": "Build"
       },
@@ -118,17 +144,19 @@
         "run",
         "--rm",
         "-d",
+        "--env-file",
+        ".env",
         "-p",
         "8000:8000/tcp",
-        "'monthlyapp:latest'",
+        "monthlyapp:latest"
       ],
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/api"
       },
       "presentation": {
         "group": "Build"
       },
       "problemMatcher": []
-    },
+    }
   ]
 }

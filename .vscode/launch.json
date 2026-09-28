@@ -10,6 +10,9 @@
       "request": "launch",
       "module": "fastapi",
       "args": ["dev", "api/main.py"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/api/.env",
+      "python": "${workspaceFolder}/api/.venv/bin/python",
       "jinja": true
     }
   ]

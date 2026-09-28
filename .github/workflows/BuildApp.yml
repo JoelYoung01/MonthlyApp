@@ -44,6 +44,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build Vue App
+        working-directory: web
         env:
           VITE_APP_TITLE: ${{ vars.APP_TITLE }}
           VITE_API_URL: ${{ vars.API_URL }}
@@ -56,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vue-build
-          path: ./dist
+          path: web/dist
 
   Build-Fastapi:
     name: Build Docker Image
@@ -71,7 +72,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: vue-build
-          path: ./dist
+          path: api/dist
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -86,7 +87,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./api
+          file: ./api/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ inputs.ghcr_namespace }}/${{ inputs.image_name }}:latest

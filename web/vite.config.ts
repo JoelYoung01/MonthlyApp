@@ -1,15 +1,18 @@
 import { fileURLToPath, URL } from "node:url";
 
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 import AutoImport from "unplugin-auto-import/vite";
 
-function validateVars(requiredEnvVars: string[]) {
+function validateVars(requiredEnvVars: string[]): Plugin {
   return {
     name: "ValidateVars",
-    config() {
-      const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+    config(_config, { mode }) {
+      const fileEnv = loadEnv(mode, process.cwd(), "VITE_");
+      const missingVars = requiredEnvVars.filter(
+        (envVar) => !process.env[envVar] && !fileEnv[envVar]
+      );
 
       if (missingVars.length > 0) {
         throw new Error(

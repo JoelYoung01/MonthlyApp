@@ -1,0 +1,11 @@
+# Deployment environment: development, staging, or production
+ENVIRONMENT=development
+
+# Google OAuth client id (same value as web/.env)
+GOOGLE_CLIENT_ID=
+
+# Backend session secret
+SECRET_KEY=
+
+# Built frontend files, served when ENVIRONMENT is not development
+VUE_STATIC_DIR=dist

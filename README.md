@@ -30,37 +30,32 @@ git remote add origin <new_repo_url>
 git push -u origin main
 ```
 
+The Vue app lives in `web/`. The FastAPI service, Dockerfile, and uv project live in `api/`.
+
 ### Step 2 - Setup Environment
 
-Copy `.envtemplate` to a new file, `.env`, and fill out applicable values
-
-Setup the backend by creating a venv.
+Copy each template to `.env` and fill out the values:
 
 ```bash
-# Add venv
-py -m venv venv
+cp web/.envtemplate web/.env
+cp api/.envtemplate api/.env
 ```
 
-When using VSCode, you should have the option to set this venv as your default python interpreter. If the option did not pop up, you can set this opening the cmd palette `Ctrl` + `Shift` + `P` and typing `Python: Select Interpreter` or something similar.
+`web/.env` holds the Vite variables (`VITE_APP_TITLE`, `VITE_API_URL`, `VITE_GOOGLE_CLIENT_ID`). `api/.env` holds the API variables (`ENVIRONMENT`, `GOOGLE_CLIENT_ID`, `SECRET_KEY`). Use the same Google client id in both files.
 
-> When setting your venv python as your default interpreter, you will have to reload VSCode before your terminals switch to using that python instance.
-
-Once your venv is active, `echo $env:VIRTUAL_ENV` should return your venv's path.
+Install [uv](https://docs.astral.sh/uv/) if it is not already available.
 
 ### Step 3 - Install Dependencies
 
-Install dependencies
-
 ```bash
-# Install Vite Deps
-pnpm i
+# Install Vite deps
+pnpm --dir web i
 
-# Activate venv (only if not already active)
-./venv/Scripts/activate
-
-# Install Python dependencies
-pip install -r requirements.txt
+# Install Python deps into api/.venv (Python 3.12)
+uv sync --project api
 ```
+
+Point VS Code at `api/.venv` with `Python: Select Interpreter` if it does not pick that environment up automatically.
 
 ### Run / Build / Deploy
 
@@ -68,22 +63,24 @@ pip install -r requirements.txt
 
 ```bash
 # Run Vite Dev Server
-pnpm dev
+pnpm --dir web dev
 
 # Run FastAPI Dev Server
-fastapi dev api/main.py
+uv run --project api fastapi dev api/main.py
 ```
 
 #### Type-Check, Compile and Minify for Production
 
 ```bash
-pnpm build
+pnpm --dir web build
 ```
+
+The production image expects that build at `api/dist`. GitHub Actions copies `web/dist` there before `docker build` with context `api/`.
 
 #### Lint with [ESLint](https://eslint.org/)
 
 ```bash
-pnpm lint
+pnpm --dir web lint
 ```
 
 ## S3 Deployment

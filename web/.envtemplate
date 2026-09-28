@@ -1,0 +1,8 @@
+# Display name for the app
+VITE_APP_TITLE=Monthly App
+
+# API URL
+VITE_API_URL=http://localhost:8000/api
+
+# Google OAuth client id
+VITE_GOOGLE_CLIENT_ID=

@@ -1,5 +1,6 @@
 import secrets
 import warnings
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -22,8 +23,7 @@ def parse_cors(v: Any) -> list[str] | str:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Use top level .env file (one level above ./backend/)
-        env_file="../.env",
+        env_file=str(Path(__file__).resolve().parents[1] / ".env"),
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     HASH_ALGORITHM: str = "HS256"
     FRONTEND_HOST: str = "http://localhost:5173"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
-    VITE_GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_ID: str
     VUE_STATIC_DIR: str = "dist"
 
     BACKEND_CORS_ORIGINS: Annotated[

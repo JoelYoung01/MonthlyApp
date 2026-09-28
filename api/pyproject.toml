@@ -1,6 +1,33 @@
+[project]
+name = "monthly-app"
+version = "0.0.1"
+description = "Monthly App API"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "google-auth[requests]==2.38.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.0",
+    "pyjwt==2.10.1",
+    "sqlalchemy==2.0.36",
+    "sqlmodel==0.0.22",
+    "uvicorn[standard]==0.34.0",
+]
+
+[dependency-groups]
+dev = [
+    "black==24.10.0",
+    "fastapi-cli==0.0.7",
+    "flake8==7.1.1",
+    "isort==5.13.2",
+]
+
+[tool.uv]
+package = false
+
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py312']
 include = '\.pyx?$'
 extend-exclude = '''
 # A regex preceded with ^/ will apply only to files and directories
