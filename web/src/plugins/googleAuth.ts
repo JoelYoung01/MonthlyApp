@@ -3,15 +3,11 @@ import type { InjectionKey, Ref } from "vue";
 
 export const googleAccountsLoadedKey = Symbol() as InjectionKey<Ref<boolean>>;
 
-const defaultOptions = {
-  prompt: false as boolean
-};
-
 /**
  * Docs for js API:
  * https://developers.google.com/identity/gsi/web/reference/js-reference
  */
-export function install(app: any, options = defaultOptions) {
+export function install(app: any) {
   const loaded = ref(false);
   app.provide(googleAccountsLoadedKey, loaded);
 
@@ -19,16 +15,11 @@ export function install(app: any, options = defaultOptions) {
   window.onGoogleLibraryLoad = () => {
     google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      auto_select: true,
-      callback: loginWithGoogle,
-      use_fedcm_for_prompt: true
+      auto_select: false,
+      callback: loginWithGoogle
     });
 
     loaded.value = true;
-
-    if (options.prompt) {
-      google.accounts.id.prompt();
-    }
   };
 
   setTimeout(() => {

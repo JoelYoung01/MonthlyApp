@@ -10,10 +10,7 @@ const router = createRouter({
     {
       path: "/",
       name: "Home",
-      component: HomeView,
-      meta: {
-        noAuthReq: true
-      }
+      component: HomeView
     },
     {
       path: "/login",
@@ -70,12 +67,22 @@ const router = createRouter({
   ]
 });
 
-// Verify user is logged in before routing
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const sessionStore = useSessionStore();
+  await sessionStore.checkSession();
 
-  if (!sessionStore.currentUser && !to.meta.noAuthReq) {
-    return `/login?redirectUrl=${to.fullPath}`;
+  if (to.meta.noAuthReq) {
+    if (to.name === "Login" && sessionStore.currentUser) {
+      const redirect = Array.isArray(to.query.redirectUrl)
+        ? to.query.redirectUrl[0]
+        : to.query.redirectUrl;
+      return typeof redirect === "string" && redirect.startsWith("/") ? redirect : "/";
+    }
+    return true;
+  }
+
+  if (!sessionStore.currentUser) {
+    return `/login?redirectUrl=${encodeURIComponent(to.fullPath)}`;
   }
 });
 
