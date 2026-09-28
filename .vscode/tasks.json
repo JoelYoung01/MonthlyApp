@@ -33,7 +33,10 @@
         "dev"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/web"
+        "cwd": "${workspaceFolder}/web",
+        "env": {
+          "CI": "true"
+        }
       },
       "presentation": {
         "group": "Dev"
@@ -85,7 +88,10 @@
         "build"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/web"
+        "cwd": "${workspaceFolder}/web",
+        "env": {
+          "CI": "true"
+        }
       },
       "presentation": {
         "group": "Build"
