@@ -1,48 +1,59 @@
 <script setup lang="ts">
+import { User } from "@lucide/vue";
 import { useSessionStore } from "@/stores/session";
 import { useRouter } from "vue-router";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 
 const sessionStore = useSessionStore();
 const router = useRouter();
 
-const dialogVisible = ref(false);
+const dialogOpen = ref(false);
 
 function logout() {
   sessionStore.logout();
-  dialogVisible.value = false;
+  dialogOpen.value = false;
   router.push("/login");
 }
 </script>
 
 <template>
-  <v-btn v-if="sessionStore.currentUser" variant="text" icon>
-    <v-avatar>
-      <v-img alt="Profile Image" :src="sessionStore.currentUser.avatar_url">
-        <template #placeholder>
-          <v-icon class="text-white h-100" icon="mdi-account" size="large" />
-        </template>
-      </v-img>
-    </v-avatar>
-
-    <v-dialog v-model="dialogVisible" activator="parent" max-width="300">
-      <v-card>
-        <v-card-title class="text-center">Account</v-card-title>
-        <v-card-text>
-          <div class="d-flex flex-column align-center">
-            <v-avatar size="75" class="mb-2">
-              <v-img alt="Profile Image" :src="sessionStore.currentUser.avatar_url">
-                <template #placeholder>
-                  <v-icon icon="mdi-account-circle" size="75" />
-                </template>
-              </v-img>
-            </v-avatar>
-            {{ sessionStore.currentUser.display_name }}
-            <v-btn color="primary" class="mt-4" @click="logout">Sign Out</v-btn>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-btn>
+  <Dialog v-if="sessionStore.currentUser" v-model:open="dialogOpen">
+    <DialogTrigger as-child>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="rounded-full text-primary-foreground hover:bg-primary-foreground/10"
+      >
+        <Avatar size="sm">
+          <AvatarImage :src="sessionStore.currentUser.avatar_url ?? ''" alt="Profile Image" />
+          <AvatarFallback>
+            <User class="size-4" />
+          </AvatarFallback>
+        </Avatar>
+      </Button>
+    </DialogTrigger>
+    <DialogContent class="sm:max-w-xs">
+      <DialogHeader>
+        <DialogTitle class="text-center">Account</DialogTitle>
+      </DialogHeader>
+      <div class="flex flex-col items-center gap-3 py-2">
+        <Avatar size="lg">
+          <AvatarImage :src="sessionStore.currentUser.avatar_url ?? ''" alt="Profile Image" />
+          <AvatarFallback>
+            <User class="size-8" />
+          </AvatarFallback>
+        </Avatar>
+        <p class="text-sm font-medium">{{ sessionStore.currentUser.display_name }}</p>
+        <Button class="mt-2 w-full" @click="logout">Sign Out</Button>
+      </div>
+    </DialogContent>
+  </Dialog>
 </template>
-
-<style scoped></style>

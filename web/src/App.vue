@@ -1,46 +1,63 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from "vue-router";
+import { RouterLink, RouterView, useRoute } from "vue-router";
+import { Home, List } from "@lucide/vue";
 import AccountButton from "./components/AccountButton.vue";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
 const route = useRoute();
 
 const title = import.meta.env.VITE_APP_TITLE;
 
-const mainClassList = computed(() => {
-  let classes = "";
-
-  if (route.meta.useShadedBackground) {
-    classes += "shaded-bg";
-  }
-
-  return classes;
-});
+const mainClass = computed(() =>
+  cn("flex-1", route.meta.useShadedBackground ? "bg-muted/40" : undefined)
+);
 </script>
 
 <template>
-  <v-app>
-    <v-app-bar dense color="primary" :elevation="2" class="pe-4">
-      <v-app-bar-title>
-        <RouterLink class="text-decoration-none text-white" to="/">{{ title }}</RouterLink>
-      </v-app-bar-title>
+  <div class="relative flex min-h-svh flex-col bg-background text-foreground">
+    <header class="sticky top-0 z-40 border-b bg-primary text-primary-foreground shadow-sm">
+      <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4">
+        <RouterLink
+          class="me-4 text-lg font-semibold tracking-tight text-primary-foreground no-underline"
+          to="/"
+        >
+          {{ title }}
+        </RouterLink>
 
-      <v-btn variant="text" prepend-icon="mdi-list-box" to="/app-definition/list" class="mx-1">
-        Definitions
-      </v-btn>
+        <Button
+          variant="ghost"
+          as-child
+          class="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+        >
+          <RouterLink to="/app-definition/list">
+            <List data-icon="inline-start" />
+            Definitions
+          </RouterLink>
+        </Button>
 
-      <v-btn variant="text" prepend-icon="mdi-home" to="/" class="mx-1"> Home </v-btn>
+        <Button
+          variant="ghost"
+          as-child
+          class="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+        >
+          <RouterLink to="/">
+            <Home data-icon="inline-start" />
+            Home
+          </RouterLink>
+        </Button>
 
-      <AccountButton class="ms-3" />
-    </v-app-bar>
+        <div class="ms-auto">
+          <AccountButton />
+        </div>
+      </div>
+    </header>
 
-    <v-main :class="mainClassList">
+    <main :class="mainClass">
       <RouterView />
-    </v-main>
-  </v-app>
-</template>
+    </main>
 
-<style scoped>
-.shaded-bg {
-  background-color: whitesmoke;
-}
-</style>
+    <Toaster />
+  </div>
+</template>

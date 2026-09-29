@@ -1,6 +1,6 @@
 # Vue Static Site Template
 
-This template should help get you started developing with a static Vue 3 web application built with Vite and styled with Vuetify.
+This template should help get you started developing with a static Vue 3 web application built with Vite and styled with shadcn-vue (Tailwind CSS).
 
 ## Recommended IDE Setup
 

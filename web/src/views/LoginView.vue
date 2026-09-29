@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LoaderCircle } from "@lucide/vue";
 import GoogleLoginButton from "@/components/GoogleLoginButton.vue";
 import { useSessionStore } from "@/stores/session";
 import { useRoute, useRouter } from "vue-router";
@@ -28,16 +29,14 @@ watch(
 </script>
 
 <template>
-  <template v-if="sessionStore.loading">
-    <h2 class="mt-5 text-center">Checking your session...</h2>
-    <div class="d-flex justify-center mt-3">
-      <v-progress-circular color="primary" indeterminate />
+  <div class="mx-auto flex w-full max-w-md flex-col items-center px-4 py-16">
+    <template v-if="sessionStore.loading">
+      <h2 class="mb-4 text-center text-xl font-semibold">Checking your session...</h2>
+      <LoaderCircle class="size-8 animate-spin text-primary" />
+    </template>
+    <div v-else class="flex flex-col items-center gap-4">
+      <h2 class="text-xl font-semibold">Sign in to continue</h2>
+      <GoogleLoginButton />
     </div>
-  </template>
-  <div v-else class="d-flex flex-column align-center mt-10 ga-4">
-    <h2>Sign in to continue</h2>
-    <GoogleLoginButton />
   </div>
 </template>
-
-<style scoped></style>

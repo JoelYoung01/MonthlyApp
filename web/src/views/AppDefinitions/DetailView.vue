@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { Pencil, Plus, Trash2 } from "@lucide/vue";
+import { useRoute, useRouter, RouterLink } from "vue-router";
 import type { AppSubmission, AppDefinition } from "@/types";
 import { ApiError, del, formatDate, get } from "@/utils";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
 import { onMounted } from "vue";
 import { useSessionStore } from "@/stores/session";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 
 const route = useRoute();
 const router = useRouter();
@@ -52,91 +63,111 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container class="d-flex flex-column gap-2">
-    <v-card class="d-flex align-center pa-3 gap-2">
-      <h1>{{ detail?.name }}</h1>
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-8">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between gap-4 space-y-0">
+        <CardTitle class="text-3xl">{{ detail?.name }}</CardTitle>
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
+          <Button v-if="sessionStore.currentUser?.admin" as-child variant="secondary">
+            <RouterLink :to="`/app-definition/${route.params.app_definition_id}/update`">
+              <Pencil data-icon="inline-start" />
+              Edit Definition
+            </RouterLink>
+          </Button>
+          <Button @click="submitModalVisible = true">
+            <Plus data-icon="inline-start" />
+            Add Submission
+          </Button>
+        </div>
+      </CardHeader>
+    </Card>
 
-      <v-spacer />
+    <Card>
+      <CardContent class="grid gap-6 pt-6 sm:grid-cols-3">
+        <div>
+          <dt class="text-sm font-medium text-muted-foreground">Start Date</dt>
+          <dd class="mt-1">{{ formatDate(detail?.start_date) }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-muted-foreground">Due Date</dt>
+          <dd class="mt-1">{{ formatDate(detail?.due_date) }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-muted-foreground">Description</dt>
+          <dd class="mt-1">{{ detail?.description }}</dd>
+        </div>
+      </CardContent>
+    </Card>
 
-      <v-btn
-        v-if="sessionStore.currentUser?.admin"
-        prepend-icon="mdi-pencil"
-        color="primary"
-        :to="`/app-definition/${route.params.app_definition_id}/update`"
-      >
-        Edit Definition
-      </v-btn>
-      <v-btn prepend-icon="mdi-plus" color="success" @click="submitModalVisible = true"
-        >Add Submission</v-btn
-      >
-    </v-card>
-    <v-card class="pa-3">
-      <v-row>
-        <v-col cols="3">
-          <dt>Start Date</dt>
-          <dd>{{ formatDate(detail?.start_date) }}</dd>
-        </v-col>
-        <v-col cols="3">
-          <dt>Due Date</dt>
-          <dd>{{ formatDate(detail?.due_date) }}</dd>
-        </v-col>
-        <v-col cols="3">
-          <dt>Description</dt>
-          <dd>{{ detail?.description }}</dd>
-        </v-col>
-      </v-row>
-    </v-card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Requirements</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Description</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="req in detail?.requirements ?? []" :key="req.id">
+              <TableCell>{{ req.name }}</TableCell>
+              <TableCell>{{ req.description }}</TableCell>
+            </TableRow>
+            <TableRow v-if="detail?.requirements.length === 0">
+              <TableCell colspan="2" class="text-muted-foreground">
+                No requirements defined for this App.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
 
-    <v-card class="pa-3">
-      <h3>Requirements</h3>
-      <v-table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="req in detail?.requirements ?? []" :key="req.id">
-            <td>{{ req.name }}</td>
-            <td>{{ req.description }}</td>
-          </tr>
-          <tr v-if="detail?.requirements.length === 0">
-            <td colspan="2">No requirements defined for this App.</td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
-
-    <v-card v-if="submissions?.length" class="pa-3">
-      <h3>Your Submissions</h3>
-      <v-table>
-        <thead>
-          <tr>
-            <th>Link</th>
-            <th>Submitted On</th>
-            <th class="action-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="submission in submissions" :key="submission.id">
-            <td>
-              <a :href="submission.link ?? '/bad-link'" target="_blank">{{ submission.link }}</a>
-            </td>
-            <td>{{ formatDate(submission.created_on) }}</td>
-            <td>
-              <v-btn
-                variant="text"
-                color="red"
-                icon="mdi-delete"
-                @click="deleteSubmission(submission.id)"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
-    </v-card>
-  </v-container>
+    <Card v-if="submissions?.length">
+      <CardHeader>
+        <CardTitle>Your Submissions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Link</TableHead>
+              <TableHead>Submitted On</TableHead>
+              <TableHead class="w-12" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="submission in submissions" :key="submission.id">
+              <TableCell>
+                <a
+                  class="text-primary underline-offset-4 hover:underline"
+                  :href="submission.link ?? '/bad-link'"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ submission.link }}
+                </a>
+              </TableCell>
+              <TableCell>{{ formatDate(submission.created_on) }}</TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  class="text-destructive"
+                  @click="deleteSubmission(submission.id)"
+                >
+                  <Trash2 />
+                </Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  </div>
 
   <AppSubmissionModal
     v-model="submitModalVisible"
@@ -144,13 +175,3 @@ onMounted(() => {
     @submit="loadSubmissions()"
   />
 </template>
-
-<style scoped>
-thead th {
-  font-weight: bold !important;
-}
-
-.action-col {
-  width: 0px;
-}
-</style>

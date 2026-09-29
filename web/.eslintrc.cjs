@@ -5,7 +5,6 @@ module.exports = {
   root: true,
   extends: [
     "plugin:vue/vue3-recommended",
-    "plugin:vuetify/recommended",
     "eslint:recommended",
     "@vue/eslint-config-typescript",
     "@vue/eslint-config-prettier/skip-formatting"
@@ -15,5 +14,14 @@ module.exports = {
   },
   rules: {
     "prettier/prettier": "warn"
-  }
+  },
+  overrides: [
+    {
+      files: ["src/components/ui/**/*.{vue,ts}"],
+      rules: {
+        "vue/multi-word-component-names": "off",
+        "vue/require-default-prop": "off"
+      }
+    }
+  ]
 };

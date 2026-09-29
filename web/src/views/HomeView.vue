@@ -4,6 +4,8 @@ import { get } from "@/utils";
 import { useSessionStore } from "@/stores/session";
 import AppDefinitionCard from "@/components/AppDefinitionCard.vue";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "@lucide/vue";
 
 const sessionStore = useSessionStore();
 
@@ -56,33 +58,41 @@ watch(
 </script>
 
 <template>
-  <v-container>
-    <section>
-      <h2>Active App</h2>
-      <v-alert v-if="!activeApps?.length" type="info"> No Active Apps found in db. </v-alert>
-      <v-row v-else>
-        <v-col v-for="definition in activeApps" :key="definition.id" cols="4">
-          <AppDefinitionCard
-            :definition="definition"
-            :submissions="appSubmissions(definition.id)"
-            @add-submit="onSubmitClick(definition)"
-          />
-        </v-col>
-      </v-row>
+  <div class="mx-auto w-full max-w-7xl space-y-10 px-4 py-8">
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold tracking-tight">Active App</h2>
+      <Alert v-if="!activeApps?.length">
+        <Info />
+        <AlertTitle>No active apps</AlertTitle>
+        <AlertDescription>No Active Apps found in db.</AlertDescription>
+      </Alert>
+      <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <AppDefinitionCard
+          v-for="definition in activeApps"
+          :key="definition.id"
+          :definition="definition"
+          :submissions="appSubmissions(definition.id)"
+          @add-submit="onSubmitClick(definition)"
+        />
+      </div>
     </section>
 
-    <section>
-      <h2>Completed Applications</h2>
-      <v-alert v-if="!completeApps?.length" type="info"> No Completed Apps found in db. </v-alert>
-      <v-row v-else>
-        <v-col v-for="definition in completeApps" :key="definition.id" cols="4">
-          <AppDefinitionCard
-            :definition="definition"
-            :submissions="appSubmissions(definition.id)"
-            @add-submit="onSubmitClick(definition)"
-          />
-        </v-col>
-      </v-row>
+    <section class="space-y-4">
+      <h2 class="text-2xl font-semibold tracking-tight">Completed Applications</h2>
+      <Alert v-if="!completeApps?.length">
+        <Info />
+        <AlertTitle>No completed apps</AlertTitle>
+        <AlertDescription>No Completed Apps found in db.</AlertDescription>
+      </Alert>
+      <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <AppDefinitionCard
+          v-for="definition in completeApps"
+          :key="definition.id"
+          :definition="definition"
+          :submissions="appSubmissions(definition.id)"
+          @add-submit="onSubmitClick(definition)"
+        />
+      </div>
     </section>
 
     <AppSubmissionModal
@@ -90,11 +100,5 @@ watch(
       :definition="submitDefinition"
       @submit="getSubmissions()"
     />
-  </v-container>
+  </div>
 </template>
-
-<style scoped>
-section {
-  margin-bottom: 2rem;
-}
-</style>

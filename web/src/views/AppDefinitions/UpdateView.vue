@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { Plus, Save, Trash2, X } from "@lucide/vue";
+import { useRoute, useRouter, RouterLink } from "vue-router";
 import type { AppDefinition } from "@/types";
 import { onMounted } from "vue";
 import { ApiError, del, get, post, put } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 const route = useRoute();
 const router = useRouter();
@@ -10,21 +24,28 @@ const router = useRouter();
 const detail = ref<AppDefinition>();
 const form = reactive({
   id: null as number | null,
-  name: null as string | null,
+  name: "" as string,
   start_date: null as string | null,
   due_date: null as string | null,
-  description: null as string | null
+  description: "" as string
 });
 const defaultReq = {
   id: null as number | null,
-  name: null as string | null,
-  description: null as string | null
+  name: "" as string,
+  description: "" as string
 };
-const formValid = ref(false);
 const requirementForms = reactive<(typeof defaultReq)[]>([]);
 
 const creating = computed(() => {
   return !route.params.app_definition_id;
+});
+const formValid = computed(() => {
+  return Boolean(
+    form.name.trim() &&
+      form.start_date &&
+      form.due_date &&
+      requirementForms.every((req) => req.name.trim() && req.description.trim())
+  );
 });
 const canSubmit = computed(() => {
   return formValid.value && requirementForms.length > 0;
@@ -34,7 +55,6 @@ const cancelTo = computed(() => {
   return `/app-definition/${route.params.app_definition_id}/detail`;
 });
 
-const required = (val: string) => !!val || "Required";
 function addReq() {
   requirementForms.push({ ...defaultReq });
 }
@@ -52,24 +72,24 @@ function processDate(dateString: string | null) {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   } else {
-    return new Date(`${dateString}T00:00:00`).toISOString().replace("Z", ""); // Assume midnight local time
+    return new Date(`${dateString}T00:00:00`).toISOString().replace("Z", "");
   }
 }
 
 function fillForm() {
   if (!detail.value) return;
-  for (const key in form) {
-    form[key as keyof typeof form] = (detail.value[key as keyof typeof detail.value] ??
-      null) as any;
-  }
+  form.id = detail.value.id ?? null;
+  form.name = detail.value.name ?? "";
+  form.start_date = detail.value.start_date ?? null;
+  form.due_date = detail.value.due_date ?? null;
+  form.description = detail.value.description ?? "";
 
   for (const reqDetail of detail.value.requirements) {
-    const reqForm = { ...defaultReq };
-    for (const key in defaultReq) {
-      reqForm[key as keyof typeof reqForm] = (reqDetail[key as keyof typeof reqDetail] ??
-        null) as any;
-    }
-    requirementForms.push(reqForm);
+    requirementForms.push({
+      id: reqDetail.id ?? null,
+      name: reqDetail.name ?? "",
+      description: reqDetail.description ?? ""
+    });
   }
 }
 
@@ -126,103 +146,113 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container>
-    <v-form v-model="formValid" class="d-flex flex-column gap-2">
-      <v-card class="d-flex align-center pa-3 gap-2">
-        <h1>{{ creating ? "Create New" : "Update" }} App Definition</h1>
-
-        <v-spacer />
-
-        <v-btn prepend-icon="mdi-close" color="secondary" :to="cancelTo"> Cancel </v-btn>
-        <v-btn prepend-icon="mdi-floppy" color="success" :disabled="!canSubmit" @click="save()">
-          Save Changes
-        </v-btn>
-      </v-card>
-      <v-card class="pa-3">
-        <h2>Details</h2>
-        <v-row>
-          <v-col cols="4">
-            <v-text-field v-model="form.name" :rules="[required]" label="Name" />
-          </v-col>
-          <v-col cols="4">
-            <v-text-field
-              label="Start Date"
-              :rules="[required]"
-              type="date"
-              :model-value="processDate(form.start_date)"
-              @update:model-value="form.start_date = processDate($event)"
-            />
-            <v-text-field
-              label="Due Date"
-              :rules="[required]"
-              type="date"
-              :model-value="processDate(form.due_date)"
-              @update:model-value="form.due_date = processDate($event)"
-            />
-          </v-col>
-          <v-col cols="4">
-            <v-textarea v-model="form.description" label="Description"></v-textarea>
-          </v-col>
-        </v-row>
-      </v-card>
-
-      <v-card class="pa-3">
-        <div class="d-flex align-end">
-          <h2>Requirements</h2>
-          <v-spacer />
-          <v-btn prepend-icon="mdi-plus" color="primary" size="small" @click="addReq()">
-            Add Requirement
-          </v-btn>
+  <form class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-8" @submit.prevent="save()">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between gap-4 space-y-0">
+        <CardTitle class="text-3xl">
+          {{ creating ? "Create New" : "Update" }} App Definition
+        </CardTitle>
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
+          <Button variant="outline" as-child type="button">
+            <RouterLink :to="cancelTo">
+              <X data-icon="inline-start" />
+              Cancel
+            </RouterLink>
+          </Button>
+          <Button type="submit" :disabled="!canSubmit">
+            <Save data-icon="inline-start" />
+            Save Changes
+          </Button>
         </div>
-        <v-table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Description</th>
-              <th class="action-col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(reqForm, i) in requirementForms ?? []" :key="i">
-              <td>
-                <v-text-field
-                  v-model="reqForm.name"
-                  density="compact"
-                  hide-details
-                  class="py-1"
-                  :rules="[required]"
-                />
-              </td>
-              <td>
-                <v-text-field
-                  v-model="reqForm.description"
-                  density="compact"
-                  hide-details
-                  class="py-1"
-                  :rules="[required]"
-                />
-              </td>
-              <td>
-                <v-btn size="small" icon="mdi-delete" color="red" @click="delReq(i)" />
-              </td>
-            </tr>
-            <tr v-if="requirementForms.length === 0">
-              <td colspan="2">
-                <v-btn prepend-icon="mdi-plus" color="primary" @click="addReq()">
-                  Add Requirement
-                </v-btn>
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-card>
-    </v-form>
-  </v-container>
-</template>
+      </CardHeader>
+    </Card>
 
-<style scoped>
-.action-col {
-  /* Basis of 0 shrinks col as much as possible */
-  width: 0rem;
-}
-</style>
+    <Card>
+      <CardHeader>
+        <CardTitle>Details</CardTitle>
+      </CardHeader>
+      <CardContent class="grid gap-6 md:grid-cols-3">
+        <div class="grid gap-2">
+          <Label for="name">Name</Label>
+          <Input id="name" v-model="form.name" required />
+        </div>
+        <div class="grid gap-4">
+          <div class="grid gap-2">
+            <Label for="start-date">Start Date</Label>
+            <Input
+              id="start-date"
+              type="date"
+              required
+              :model-value="processDate(form.start_date) ?? ''"
+              @update:model-value="form.start_date = processDate(String($event))"
+            />
+          </div>
+          <div class="grid gap-2">
+            <Label for="due-date">Due Date</Label>
+            <Input
+              id="due-date"
+              type="date"
+              required
+              :model-value="processDate(form.due_date) ?? ''"
+              @update:model-value="form.due_date = processDate(String($event))"
+            />
+          </div>
+        </div>
+        <div class="grid gap-2">
+          <Label for="description">Description</Label>
+          <Textarea id="description" v-model="form.description" class="min-h-28" />
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader class="flex flex-row items-end justify-between gap-4 space-y-0">
+        <CardTitle>Requirements</CardTitle>
+        <Button type="button" size="sm" @click="addReq()">
+          <Plus data-icon="inline-start" />
+          Add Requirement
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead class="w-12" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="(reqForm, i) in requirementForms" :key="i">
+              <TableCell>
+                <Input v-model="reqForm.name" required />
+              </TableCell>
+              <TableCell>
+                <Input v-model="reqForm.description" required />
+              </TableCell>
+              <TableCell>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  class="text-destructive"
+                  @click="delReq(i)"
+                >
+                  <Trash2 />
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow v-if="requirementForms.length === 0">
+              <TableCell colspan="3">
+                <Button type="button" @click="addReq()">
+                  <Plus data-icon="inline-start" />
+                  Add Requirement
+                </Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  </form>
+</template>
