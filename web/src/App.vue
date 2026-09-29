@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRoute } from "vue-router";
-import { Home, List } from "@lucide/vue";
+import { List } from "@lucide/vue";
 import AccountButton from "./components/AccountButton.vue";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -34,17 +34,6 @@ const mainClass = computed(() =>
           <RouterLink to="/app-definition/list">
             <List data-icon="inline-start" />
             Definitions
-          </RouterLink>
-        </Button>
-
-        <Button
-          variant="ghost"
-          as-child
-          class="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-        >
-          <RouterLink to="/">
-            <Home data-icon="inline-start" />
-            Home
           </RouterLink>
         </Button>
 

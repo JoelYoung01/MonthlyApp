@@ -124,4 +124,9 @@
     @apply bg-background text-foreground;
     @apply font-sans;
     }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href] {
+    @apply cursor-pointer;
+    }
 }

@@ -1,37 +1,161 @@
 <script setup lang="ts">
-import type { AppDefinitionDashboard, AppSubmissionDetail } from "@/types";
-import { get } from "@/utils";
+import {
+  AppDefinitionStatus,
+  type AppDefinitionDashboard,
+  type AppSubmissionDetail
+} from "@/types";
+import { get, put } from "@/utils";
+import {
+  appsDifferingDates,
+  previewMoveAppToMonth,
+  previewShiftAppByMonths
+} from "@/utils/reschedule";
 import { useSessionStore } from "@/stores/session";
-import AppDefinitionCard from "@/components/AppDefinitionCard.vue";
+import YearCalendar, { type CalendarMonth } from "@/components/YearCalendar.vue";
 import AppSubmissionModal from "@/components/AppSubmissionModal.vue";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "@lucide/vue";
+import AppDefinitionCreateModal from "@/components/AppDefinitionCreateModal.vue";
+import AppDefinitionDetailModal from "@/components/AppDefinitionDetailModal.vue";
 
 const sessionStore = useSessionStore();
 
-const appDefinitions = ref<AppDefinitionDashboard[]>();
+const appDefinitions = ref<AppDefinitionDashboard[]>([]);
 const submissions = ref<AppSubmissionDetail[]>([]);
-const activeApps = ref<AppDefinitionDashboard[]>();
-const submitCardVisible = ref(false);
+const visibleYear = ref(new Date().getFullYear());
+const rescheduleMode = ref(false);
+const previewDefinitions = ref<AppDefinitionDashboard[] | null>(null);
+const dropTargetKey = ref<string | null>(null);
+const saving = ref(false);
+
+const createModalOpen = ref(false);
+const createMonthKey = ref<string | null>(null);
+
+const detailModalOpen = ref(false);
+const detailAppId = ref<number | null>(null);
+
+const submitModalOpen = ref(false);
 const submitDefinition = ref<AppDefinitionDashboard>();
 
-const completeApps = computed(() => {
-  return appDefinitions.value?.filter((app) => new Date(app.due_date + "Z") < new Date());
-});
+function latestSubmission(appId: number) {
+  const appSubs = submissions.value.filter((s) => s.app_definition_id === appId);
+  if (!appSubs.length) return null;
+  return appSubs.toSorted(
+    (a, b) => new Date(b.created_on).getTime() - new Date(a.created_on).getTime()
+  )[0];
+}
 
-function onSubmitClick(definition: AppDefinitionDashboard) {
+function onSelectMonth(month: CalendarMonth) {
+  if (rescheduleMode.value) return;
+
+  const app = month.apps[0];
+
+  if (!app) {
+    if (!sessionStore.currentUser?.admin) return;
+    createMonthKey.value = month.key;
+    createModalOpen.value = true;
+    return;
+  }
+
+  if (app.status === AppDefinitionStatus.Complete) {
+    const submission = latestSubmission(app.id);
+    if (submission?.link) {
+      window.open(submission.link, "_blank", "noopener,noreferrer");
+      return;
+    }
+  }
+
+  detailAppId.value = app.id;
+  detailModalOpen.value = true;
+}
+
+function onAddSubmission(definition: AppDefinitionDashboard) {
   submitDefinition.value = definition;
-  submitCardVisible.value = true;
+  submitModalOpen.value = true;
 }
 
-function appSubmissions(appId: number) {
-  return submissions.value.filter((s) => s.app_definition_id === appId);
+function onViewApp(definition: AppDefinitionDashboard) {
+  detailAppId.value = definition.id;
+  detailModalOpen.value = true;
 }
+
+function onDetailAddSubmission() {
+  const definition = appDefinitions.value.find((app) => app.id === detailAppId.value);
+  if (!definition) return;
+  detailModalOpen.value = false;
+  onAddSubmission(definition);
+}
+
+function onDragPreview(payload: { appId: number; targetMonthKey: string } | null) {
+  if (!payload) {
+    previewDefinitions.value = null;
+    dropTargetKey.value = null;
+    return;
+  }
+  dropTargetKey.value = payload.targetMonthKey;
+  previewDefinitions.value = previewMoveAppToMonth(
+    appDefinitions.value,
+    payload.appId,
+    payload.targetMonthKey
+  );
+}
+
+async function persistDefinitions(next: AppDefinitionDashboard[]) {
+  const changed = appsDifferingDates(appDefinitions.value, next);
+  if (!changed.length) {
+    previewDefinitions.value = null;
+    dropTargetKey.value = null;
+    return;
+  }
+
+  saving.value = true;
+  // Optimistic UI
+  appDefinitions.value = next;
+  previewDefinitions.value = null;
+  dropTargetKey.value = null;
+
+  try {
+    await Promise.all(
+      changed.map((app) =>
+        put(`/app-definition/${app.id}/`, {
+          start_date: app.start_date,
+          due_date: app.due_date
+        })
+      )
+    );
+    await getAppDefinitions();
+  } catch (er) {
+    console.error(er);
+    await getAppDefinitions();
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function onDropApp(payload: { appId: number; targetMonthKey: string }) {
+  const next = previewMoveAppToMonth(
+    appDefinitions.value,
+    payload.appId,
+    payload.targetMonthKey
+  );
+  await persistDefinitions(next);
+}
+
+async function onNudgeApp(payload: { appId: number; deltaMonths: number }) {
+  const next = previewShiftAppByMonths(
+    appDefinitions.value,
+    payload.appId,
+    payload.deltaMonths
+  );
+  await persistDefinitions(next);
+}
+
+watch(rescheduleMode, () => {
+  previewDefinitions.value = null;
+  dropTargetKey.value = null;
+});
 
 async function getAppDefinitions() {
   try {
     appDefinitions.value = await get(`/app-definition/`);
-    activeApps.value = await get(`/app-definition/active/`);
   } catch (er) {
     console.error(er);
   }
@@ -43,6 +167,12 @@ async function getSubmissions() {
   } catch (er) {
     console.error(er);
   }
+}
+
+async function onCreated(id: number) {
+  await getAppDefinitions();
+  detailAppId.value = id;
+  detailModalOpen.value = true;
 }
 
 watch(
@@ -58,45 +188,63 @@ watch(
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-7xl space-y-10 px-4 py-8">
-    <section class="space-y-4">
-      <h2 class="text-2xl font-semibold tracking-tight">Active App</h2>
-      <Alert v-if="!activeApps?.length">
-        <Info />
-        <AlertTitle>No active apps</AlertTitle>
-        <AlertDescription>No Active Apps found in db.</AlertDescription>
-      </Alert>
-      <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <AppDefinitionCard
-          v-for="definition in activeApps"
-          :key="definition.id"
-          :definition="definition"
-          :submissions="appSubmissions(definition.id)"
-          @add-submit="onSubmitClick(definition)"
-        />
+  <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight">Year Overview</h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          <template v-if="rescheduleMode">
+            Drag apps between months, or use the arrows to nudge ±1 month. Dropping onto an
+            occupied month shifts the next contiguous apps until a gap.
+          </template>
+          <template v-else> Click a month to create, view, or open its submission. </template>
+        </p>
       </div>
-    </section>
+      <div class="flex flex-wrap items-center gap-3">
+        <span v-if="saving" class="text-xs text-muted-foreground">Saving…</span>
+        <div v-if="!rescheduleMode" class="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="size-2.5 rounded-full bg-primary" /> Active
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="size-2.5 rounded-full bg-muted-foreground/40" /> Complete
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="size-2.5 rounded-full bg-secondary-foreground/30" /> Upcoming
+          </span>
+        </div>
+      </div>
+    </div>
 
-    <section class="space-y-4">
-      <h2 class="text-2xl font-semibold tracking-tight">Completed Applications</h2>
-      <Alert v-if="!completeApps?.length">
-        <Info />
-        <AlertTitle>No completed apps</AlertTitle>
-        <AlertDescription>No Completed Apps found in db.</AlertDescription>
-      </Alert>
-      <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <AppDefinitionCard
-          v-for="definition in completeApps"
-          :key="definition.id"
-          :definition="definition"
-          :submissions="appSubmissions(definition.id)"
-          @add-submit="onSubmitClick(definition)"
-        />
-      </div>
-    </section>
+    <YearCalendar
+      v-model:year="visibleYear"
+      v-model:reschedule-mode="rescheduleMode"
+      :definitions="appDefinitions"
+      :preview-definitions="previewDefinitions"
+      :drop-target-key="dropTargetKey"
+      :submissions="submissions"
+      @select-month="onSelectMonth"
+      @add-submission="onAddSubmission"
+      @view-app="onViewApp"
+      @drag-preview="onDragPreview"
+      @drop-app="onDropApp"
+      @nudge-app="onNudgeApp"
+    />
+
+    <AppDefinitionCreateModal
+      v-model="createModalOpen"
+      :month-key="createMonthKey"
+      @created="onCreated"
+    />
+
+    <AppDefinitionDetailModal
+      v-model="detailModalOpen"
+      :app-definition-id="detailAppId"
+      @add-submission="onDetailAddSubmission"
+    />
 
     <AppSubmissionModal
-      v-model="submitCardVisible"
+      v-model="submitModalOpen"
       :definition="submitDefinition"
       @submit="getSubmissions()"
     />

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="7" fill="#171717"/>
+  <rect x="5" y="8" width="22" height="18" rx="3" fill="#fafafa"/>
+  <rect x="5" y="8" width="22" height="6" rx="3" fill="#fafafa"/>
+  <rect x="5" y="11" width="22" height="3" fill="#fafafa"/>
+  <rect x="5" y="8" width="22" height="6" rx="3" fill="#404040"/>
+  <circle cx="11" cy="6.5" r="1.5" fill="#a3a3a3"/>
+  <circle cx="21" cy="6.5" r="1.5" fill="#a3a3a3"/>
+  <rect x="10" y="5" width="2" height="4" rx="1" fill="#d4d4d4"/>
+  <rect x="20" y="5" width="2" height="4" rx="1" fill="#d4d4d4"/>
+  <!-- month grid dots -->
+  <circle cx="10" cy="17" r="1.2" fill="#171717"/>
+  <circle cx="16" cy="17" r="1.2" fill="#171717"/>
+  <circle cx="22" cy="17" r="1.2" fill="#171717"/>
+  <circle cx="10" cy="22" r="1.2" fill="#171717"/>
+  <circle cx="16" cy="22" r="1.2" fill="#171717"/>
+  <circle cx="22" cy="22" r="1.2" fill="#737373"/>
+</svg>
