@@ -17,7 +17,6 @@
       "DOM.Iterable",
       "ES2023"
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"

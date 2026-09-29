@@ -204,13 +204,13 @@ watch(
         <span v-if="saving" class="text-xs text-muted-foreground">Saving…</span>
         <div v-if="!rescheduleMode" class="flex flex-wrap gap-2 text-xs text-muted-foreground">
           <span class="inline-flex items-center gap-1.5">
-            <span class="size-2.5 rounded-full bg-primary" /> Active
+            <span class="size-2.5 rounded-full bg-emerald-600" /> Submitted
           </span>
           <span class="inline-flex items-center gap-1.5">
-            <span class="size-2.5 rounded-full bg-muted-foreground/40" /> Complete
+            <span class="size-2.5 rounded-full bg-sky-600" /> Current
           </span>
           <span class="inline-flex items-center gap-1.5">
-            <span class="size-2.5 rounded-full bg-secondary-foreground/30" /> Upcoming
+            <span class="size-2.5 rounded-full bg-red-600" /> Late
           </span>
         </div>
       </div>

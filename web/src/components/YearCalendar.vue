@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 
 const sessionStore = useSessionStore();
 
+export type MonthProgressStatus = "submitted" | "current" | "late";
+
 export type CalendarMonth = {
   year: number;
   month: number;
@@ -24,6 +26,7 @@ export type CalendarMonth = {
   label: string;
   isCurrent: boolean;
   apps: AppDefinitionDashboard[];
+  progressStatus: MonthProgressStatus | null;
 };
 
 interface Props {
@@ -77,13 +80,16 @@ const months = computed<CalendarMonth[]>(() => {
     const label = new Date(visibleYear.value, month, 1).toLocaleDateString(undefined, {
       month: "long"
     });
+    const monthApps = appsForMonth(apps, visibleYear.value, month);
+    const isCurrent = key === currentKey;
     return {
       year: visibleYear.value,
       month,
       key,
       label,
-      isCurrent: key === currentKey,
-      apps: appsForMonth(apps, visibleYear.value, month)
+      isCurrent,
+      apps: monthApps,
+      progressStatus: resolveProgressStatus(monthApps[0] ?? null, isCurrent)
     };
   });
 });
@@ -113,6 +119,17 @@ function latestSubmission(appId: number) {
   )[0];
 }
 
+function resolveProgressStatus(
+  app: AppDefinitionDashboard | null,
+  isCurrent: boolean
+): MonthProgressStatus | null {
+  if (!app) return null;
+  if (latestSubmission(app.id)) return "submitted";
+  if (isOverdue(app)) return "late";
+  if (isCurrent || app.status === AppDefinitionStatus.Active) return "current";
+  return null;
+}
+
 function showAddSubmission(month: CalendarMonth) {
   if (props.rescheduleMode) return false;
   const app = primaryApp(month);
@@ -131,6 +148,41 @@ function appTone(status: AppDefinitionStatus) {
       return "bg-secondary text-secondary-foreground";
     default:
       return "bg-accent text-accent-foreground";
+  }
+}
+
+function monthStatusClasses(status: MonthProgressStatus | null) {
+  switch (status) {
+    case "submitted":
+      return "bg-emerald-500/10 hover:bg-emerald-500/15 focus-visible:bg-emerald-500/15";
+    case "current":
+      return "bg-sky-500/10 hover:bg-sky-500/15 focus-visible:bg-sky-500/15 ring-1 ring-inset ring-sky-500/40";
+    case "late":
+      return "bg-red-500/10 hover:bg-red-500/15 focus-visible:bg-red-500/15";
+    default:
+      return null;
+  }
+}
+
+function monthStatusBadge(status: MonthProgressStatus | null) {
+  switch (status) {
+    case "submitted":
+      return {
+        label: "Submitted",
+        class: "bg-emerald-600 text-white"
+      };
+    case "current":
+      return {
+        label: "Current",
+        class: "bg-sky-600 text-white"
+      };
+    case "late":
+      return {
+        label: "Late",
+        class: "bg-red-600 text-white"
+      };
+    default:
+      return null;
   }
 }
 
@@ -252,14 +304,16 @@ function onViewApp(event: MouseEvent, app: AppDefinitionDashboard) {
         :class="
           cn(
             'flex min-h-36 flex-col gap-2 bg-card p-4 text-left transition-colors',
+            !rescheduleMode && 'cursor-pointer focus-visible:outline-none',
             !rescheduleMode &&
-              'cursor-pointer hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none',
+              !month.progressStatus &&
+              'hover:bg-muted/40 focus-visible:bg-muted/40',
             rescheduleMode && 'cursor-default',
             'last:rounded-b-xl',
             'sm:[&:nth-child(11)]:rounded-bl-xl sm:last:rounded-bl-none sm:last:rounded-br-xl',
             'lg:[&:nth-child(10)]:rounded-bl-xl lg:[&:nth-child(11)]:rounded-bl-none',
             'xl:[&:nth-child(9)]:rounded-bl-xl xl:[&:nth-child(10)]:rounded-bl-none xl:[&:nth-child(11)]:rounded-bl-none',
-            month.isCurrent && !rescheduleMode && 'ring-1 ring-inset ring-primary/40',
+            !rescheduleMode && monthStatusClasses(month.progressStatus),
             rescheduleMode &&
               dropTargetKey === month.key &&
               'bg-amber-500/10 ring-2 ring-inset ring-amber-500/50'
@@ -271,14 +325,28 @@ function onViewApp(event: MouseEvent, app: AppDefinitionDashboard) {
         @drop="onDrop($event, month)"
       >
         <div class="flex items-center justify-between gap-2">
-          <span :class="cn('text-sm font-semibold', month.isCurrent && 'text-primary')">
+          <span
+            :class="
+              cn(
+                'text-sm font-semibold',
+                month.progressStatus === 'submitted' && 'text-emerald-800 dark:text-emerald-300',
+                month.progressStatus === 'current' && 'text-sky-800 dark:text-sky-300',
+                month.progressStatus === 'late' && 'text-red-800 dark:text-red-300'
+              )
+            "
+          >
             {{ month.label }}
           </span>
           <span
-            v-if="month.isCurrent"
-            class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground"
+            v-if="monthStatusBadge(month.progressStatus)"
+            :class="
+              cn(
+                'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                monthStatusBadge(month.progressStatus)?.class
+              )
+            "
           >
-            Now
+            {{ monthStatusBadge(month.progressStatus)?.label }}
           </span>
         </div>
 
